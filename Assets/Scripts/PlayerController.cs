@@ -21,6 +21,7 @@ public class PlayerController : MonoBehaviour
     public float smoothTime = 0.08f;
     private float velocityRef;
     private bool isWallBouncing;
+    [HideInInspector] public bool controlsMirrored;
 
     [Header("Jump Assistance")]
     public float jumpBufferTime = 0.15f;
@@ -97,6 +98,8 @@ public class PlayerController : MonoBehaviour
         }
         else direction = 0;
 
+        if (controlsMirrored) direction = -direction;
+
         holdingSpace = keyboard.spaceKey.isPressed;
         
         if(keyboard.spaceKey.wasPressedThisFrame)
@@ -157,6 +160,7 @@ public class PlayerController : MonoBehaviour
         if(wantsToJump && coyoteTimeCounter > 0f && !jumpUsedSinceLanding)
         {
             rb.AddForce(Vector2.up * bounceforce * jumpForceMultiplier, ForceMode2D.Impulse);
+            if (jumpBufferCounter > 0f && manager != null) manager.PlayJumpFeedback();
 
             alreadyJumped = true;
             jumpUsedSinceLanding = true;
@@ -169,6 +173,7 @@ public class PlayerController : MonoBehaviour
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
             rb.AddForce(Vector2.up * bounceforce * jumpForceMultiplier, ForceMode2D.Impulse);
+            if (manager != null) manager.PlayJumpFeedback();
             alreadyJumped = true;
             extraJumpsRemaining--;
             jumpBufferCounter = 0f;
@@ -240,7 +245,7 @@ public class PlayerController : MonoBehaviour
             inSector = true;
         }
 
-        if(!isDead && other.CompareTag("Enemy"))
+        if(!isDead && (other.CompareTag("Enemy") || (manager != null && manager.IsLaser(other))))
         {
             TuffyController tuffy = other.GetComponentInParent<TuffyController>();
             if(tuffy != null && patrickTotemEquipped && !patrickTotemUsed &&
@@ -254,6 +259,7 @@ public class PlayerController : MonoBehaviour
 
             if(manager != null)
             {
+                if (manager.IsLaser(other)) manager.PlayLaserImpactSound();
                 manager.GameOver();
             }
             else

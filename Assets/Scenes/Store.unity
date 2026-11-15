@@ -554,6 +554,7 @@ GameObject:
   - component: {fileID: 121833961}
   - component: {fileID: 121833960}
   - component: {fileID: 121833959}
+  - component: {fileID: 3300000004}
   m_Layer: 0
   m_Name: Store Flow
   m_TagString: Untagged
@@ -7635,6 +7636,24 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2107556630}
   m_CullTransparentMesh: 1
+--- !u!114 &3300000004
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 121833958}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5267d2d570f34d77b88ef773fb8244ab, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Assembly-CSharp::SceneAudioManager
+  backgroundMusic: {fileID: 8300000, guid: 370aa68a2e2d745fea8c3e7b64cab799, type: 3}
+  musicVolume: 0.65
+  buttonClickSound: {fileID: 0}
+  buttonHoverSound: {fileID: 0}
+  buttonSoundVolume: 0.8
+  buttonOverrides: []
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
