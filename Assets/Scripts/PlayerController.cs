@@ -40,6 +40,9 @@ public class PlayerController : MonoBehaviour
     private int extraJumpsPerLanding;
     private int extraJumpsRemaining;
     private float jumpForceMultiplier = 1f;
+    private bool patrickTotemEquipped;
+    private bool patrickTotemUsed;
+    private float previousBottomY;
 
     private ContactFilter2D groundFilter;
     private readonly RaycastHit2D[] groundHits = new RaycastHit2D[12];
@@ -54,6 +57,8 @@ public class PlayerController : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         playerCollider = GetComponent<Collider2D>();
+        previousBottomY = playerCollider.bounds.min.y;
+        patrickTotemEquipped = StoreProgress.IsEquipped(StoreProgress.PatrickTotem);
         string marble = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey);
         extraJumpsPerLanding = marble == StoreProgress.Bouncy && StoreProgress.IsOwned(StoreProgress.Bouncy) ? 2 : 0;
         if (StoreProgress.IsEquipped(StoreProgress.DoubleJump))
@@ -103,6 +108,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         if(isDead) return;
+        previousBottomY = playerCollider.bounds.min.y;
         
         if(!isWallBouncing)
         {
@@ -236,6 +242,14 @@ public class PlayerController : MonoBehaviour
 
         if(!isDead && other.CompareTag("Enemy"))
         {
+            TuffyController tuffy = other.GetComponentInParent<TuffyController>();
+            if(tuffy != null && patrickTotemEquipped && !patrickTotemUsed &&
+               rb.linearVelocity.y < 0f && previousBottomY >= other.bounds.max.y - 0.1f)
+            {
+                ParryTuffy(tuffy);
+                return;
+            }
+
             isDead = true;
 
             if(manager != null)
@@ -249,6 +263,22 @@ public class PlayerController : MonoBehaviour
 
             Destroy(this);
         }
+    }
+
+    private void ParryTuffy(TuffyController tuffy)
+    {
+        patrickTotemUsed = true;
+        tuffy.ResetSpeed();
+        extraJumpsRemaining = extraJumpsPerLanding;
+        jumpUsedSinceLanding = true;
+        jumpBufferCounter = 0f;
+        coyoteTimeCounter = 0f;
+        isGrounded = false;
+        alreadyJumped = true;
+
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.AddForce(Vector2.up * (naturalBounceForce + bounceforce) * jumpForceMultiplier,
+                    ForceMode2D.Impulse);
     }
 
     private void OnTriggerExit2D(Collider2D other)

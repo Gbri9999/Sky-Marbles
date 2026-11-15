@@ -6,6 +6,17 @@ public class TuffyController : MonoBehaviour
 
     public float speed;
     public float valueToSum;
+    private float initialSpeed;
+
+    private void Awake()
+    {
+        initialSpeed = speed;
+    }
+
+    public void ResetSpeed()
+    {
+        speed = initialSpeed;
+    }
 
     void Update()
     {

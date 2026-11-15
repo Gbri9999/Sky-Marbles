@@ -29,8 +29,16 @@ public class LockerController : MonoBehaviour
     [SerializeField] private MarbleView[] marbles;
     [SerializeField] private AmuletView[] amuletSlots;
     [SerializeField] private TMP_Text selectedMarbleLabel;
+    [SerializeField] private Sprite patrickTotemIcon;
+
+    private Sprite magnetIconSprite;
 
     private static readonly string[] SlotKeys = { StoreProgress.AmuletSlot1, StoreProgress.AmuletSlot2 };
+
+    private void Awake()
+    {
+        magnetIconSprite = amuletSlots[0].magnetIcon.sprite;
+    }
 
     private void OnEnable()
     {
@@ -77,6 +85,7 @@ public class LockerController : MonoBehaviour
         List<string> options = new List<string> { "" };
         if (StoreProgress.IsOwned(StoreProgress.DoubleJump)) options.Add(StoreProgress.DoubleJump);
         if (StoreProgress.IsOwned(StoreProgress.Magnet)) options.Add(StoreProgress.Magnet);
+        if (StoreProgress.IsOwned(StoreProgress.PatrickTotem)) options.Add(StoreProgress.PatrickTotem);
         return options;
     }
 
@@ -116,9 +125,11 @@ public class LockerController : MonoBehaviour
             string id = PlayerPrefs.GetString(SlotKeys[i], "");
             AmuletView view = amuletSlots[i];
             view.nameLabel.text = id == StoreProgress.DoubleJump ? "DOUBLE JUMP" :
-                                  id == StoreProgress.Magnet ? "MAGNET" : "EMPTY";
+                                  id == StoreProgress.Magnet ? "MAGNET" :
+                                  id == StoreProgress.PatrickTotem ? "PATRICK TOTEM" : "EMPTY";
             view.jumpIcon.gameObject.SetActive(id == StoreProgress.DoubleJump);
-            view.magnetIcon.gameObject.SetActive(id == StoreProgress.Magnet);
+            view.magnetIcon.sprite = id == StoreProgress.PatrickTotem ? patrickTotemIcon : magnetIconSprite;
+            view.magnetIcon.gameObject.SetActive(id == StoreProgress.Magnet || id == StoreProgress.PatrickTotem);
             view.previous.interactable = options.Count > 1;
             view.next.interactable = options.Count > 1;
         }

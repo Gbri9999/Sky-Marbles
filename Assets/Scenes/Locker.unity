@@ -553,6 +553,7 @@ MonoBehaviour:
     previous: {fileID: 1732394026}
     next: {fileID: 748187259}
   selectedMarbleLabel: {fileID: 842131804}
+  patrickTotemIcon: {fileID: 21300000, guid: 4ca8b0f77889b44dd93b672d12eb405c, type: 3}
 --- !u!114 &85237510
 MonoBehaviour:
   m_ObjectHideFlags: 0

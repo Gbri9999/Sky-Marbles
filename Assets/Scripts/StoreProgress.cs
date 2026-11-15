@@ -8,6 +8,7 @@ public static class StoreProgress
     public const string Bouncy = "Store.Bouncy";
     public const string DoubleJump = "Store.DoubleJump";
     public const string Magnet = "Store.Magnet";
+    public const string PatrickTotem = "Store.PatrickTotem";
     public const string SelectedCharacter = "Store.SelectedCharacter";
     public const string AmuletSlot1 = "Store.AmuletSlot1";
     public const string AmuletSlot2 = "Store.AmuletSlot2";
