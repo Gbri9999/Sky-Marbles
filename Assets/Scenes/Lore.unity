@@ -393,7 +393,7 @@ MonoBehaviour:
   finalFadeOutDuration: 2
   nextSceneIntroFadeDuration: 3
   nextSceneIntroFadeSteps: 24
-  nextSceneIndex: 0
+  nextSceneName: Home
   continuePromptFontSize: 22
   continuePromptColor: {r: 0.7, g: 0.7, b: 0.7, a: 0.92}
   continuePromptScreenOffset: {x: -40, y: 28}

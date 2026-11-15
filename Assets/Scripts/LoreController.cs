@@ -2,8 +2,10 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using TMPro; 
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 
 #if ENABLE_INPUT_SYSTEM
 using UnityEngine.InputSystem;
@@ -36,7 +38,7 @@ public class LoreController : MonoBehaviour
     public float finalFadeOutDuration = 2f;
     public float nextSceneIntroFadeDuration = 3f;
     [Range(2, 64)] public int nextSceneIntroFadeSteps = 24;
-    public int nextSceneIndex;
+    [SerializeField] private string nextSceneName = "Home";
 
     [Header("Continue Prompt")]
     [Min(8f)] public float continuePromptFontSize = 22f;
@@ -236,10 +238,21 @@ public class LoreController : MonoBehaviour
     private IEnumerator FinalizeLoreTransition()
     {
         if (transitionTriggered) yield break;
+
+        int targetSceneIndex = FindNextSceneIndex();
+        if (targetSceneIndex < 0 || targetSceneIndex == SceneManager.GetActiveScene().buildIndex)
+        {
+            Debug.LogError($"LoreController: target scene '{nextSceneName}' is missing from Build Settings or points back to Lore.", this);
+            yield break;
+        }
+
         transitionTriggered = true;
 
-        GameManager.ConfigureNextSceneIntroFade(nextSceneIntroFadeDuration, nextSceneIntroFadeSteps);
-        GameManager.ConfigureNextSceneIntroAudioFade(nextSceneIntroFadeDuration);
+        if (string.Equals(nextSceneName, "Home", StringComparison.Ordinal))
+        {
+            GameManager.ConfigureNextSceneIntroFade(nextSceneIntroFadeDuration, nextSceneIntroFadeSteps);
+            GameManager.ConfigureNextSceneIntroAudioFade(nextSceneIntroFadeDuration);
+        }
 
         CacheLoreGraphicStates();
         CacheAudioStates();
@@ -266,7 +279,7 @@ public class LoreController : MonoBehaviour
         ApplyAudioFade(1f);
         SetFadeAlpha(1f);
 
-        LoadNextSceneDirect();
+        LoadNextSceneDirect(targetSceneIndex);
     }
 
     private void EnsureContinuePrompt()
@@ -445,16 +458,24 @@ public class LoreController : MonoBehaviour
         }
     }
 
-    private void LoadNextSceneDirect()
+    private int FindNextSceneIndex()
     {
-        GameSaveSystem.MarkLoreCompleted(nextSceneIndex);
+        if (string.IsNullOrWhiteSpace(nextSceneName)) return -1;
+        string targetName = nextSceneName.Trim();
 
-        if (nextSceneIndex >= 0 && nextSceneIndex < UnityEngine.SceneManagement.SceneManager.sceneCountInBuildSettings)
+        for (int i = 0; i < SceneManager.sceneCountInBuildSettings; i++)
         {
-            UnityEngine.SceneManagement.SceneManager.LoadScene(nextSceneIndex);
-            return;
+            string scenePath = SceneUtility.GetScenePathByBuildIndex(i);
+            if (string.Equals(Path.GetFileNameWithoutExtension(scenePath), targetName, StringComparison.Ordinal))
+                return i;
         }
 
-        Debug.LogWarning($"LoreController: scene index {nextSceneIndex} is not valid in Build Settings.");
+        return -1;
+    }
+
+    private void LoadNextSceneDirect(int targetSceneIndex)
+    {
+        GameSaveSystem.MarkLoreCompleted(targetSceneIndex);
+        SceneManager.LoadScene(targetSceneIndex);
     }
 }
