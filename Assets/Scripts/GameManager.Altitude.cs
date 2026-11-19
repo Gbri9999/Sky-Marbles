@@ -133,7 +133,7 @@ public partial class GameManager
         TMP_Text heading = CreateAltitudeText(altitudeNoticeRoot, "Heading",
             new Vector2(0f, 31f), new Vector2(380f, 25f), 15f,
             new Color(0.57f, 0.88f, 1f));
-        heading.text = "HITO DE ALTURA";
+        heading.text = "ALTITUDE MILESTONE";
         altitudeNoticeNumber = CreateAltitudeText(altitudeNoticeRoot, "Distance",
             new Vector2(0f, 0f), new Vector2(400f, 44f), 34f,
             new Color(1f, 0.89f, 0.56f));
@@ -190,8 +190,8 @@ public partial class GameManager
         while (pendingAltitudeMilestones.Count > 0 && !isGameOver)
         {
             int meters = pendingAltitudeMilestones.Dequeue();
-            altitudeNoticeNumber.text = $"{meters} METROS";
-            altitudeNoticeCaption.text = $"SUPERASTE LOS {meters} METROS";
+            altitudeNoticeNumber.text = $"{meters} METERS";
+            altitudeNoticeCaption.text = $"YOU REACHED {meters} METERS";
 
             float elapsed = 0f;
             while (elapsed < 0.42f)

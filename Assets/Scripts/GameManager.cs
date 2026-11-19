@@ -30,9 +30,9 @@ public partial class GameManager : MonoBehaviour
 
     [Header("Alertas")]
     [SerializeField] private CanvasGroup warningPanel;
-    [SerializeField] private string earthquakeAlert = "WARNING: TERREMOTO";
-    [SerializeField] private string mirrorAlert = "WARNING: ESPEJO - A/D INVERTIDOS";
-    [SerializeField] private string laserAlert = "WARNING: LASERES";
+    [SerializeField] private string earthquakeAlert = "WARNING: EARTHQUAKE";
+    [SerializeField] private string mirrorAlert = "WARNING: MIRROR - A/D REVERSED";
+    [SerializeField] private string laserAlert = "WARNING: LASERS";
 
     private PlayerController playerController;
     private CameraMovement cameraMovement;

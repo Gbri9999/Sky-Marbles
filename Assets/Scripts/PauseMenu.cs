@@ -1,6 +1,8 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UI;
+using TMPro;
 
 public class PauseMenu : MonoBehaviour
 {
@@ -11,19 +13,50 @@ public class PauseMenu : MonoBehaviour
 
     private bool paused;
     private Coroutine fadeRoutine;
+    private HomeSettingsMenu settings;
 
     private void Awake()
     {
         pausePanel.alpha = 0f;
         pausePanel.interactable = false;
         pausePanel.blocksRaycasts = false;
+        Canvas canvas = pausePanel.GetComponentInParent<Canvas>();
+        settings = canvas.gameObject.AddComponent<HomeSettingsMenu>();
+        settings.ConfigureForPause(saveSystem);
+
+        RectTransform panel = pausePanel.GetComponent<RectTransform>();
+        Transform retry = panel.Find("Retry");
+        if (retry != null)
+        {
+            GameObject buttonObject = Instantiate(retry.gameObject, panel);
+            buttonObject.name = "Settings";
+            Button button = buttonObject.GetComponent<Button>();
+            button.onClick = new Button.ButtonClickedEvent();
+            button.onClick.AddListener(settings.OpenSettings);
+            buttonObject.GetComponentInChildren<TMP_Text>().text = "SETTINGS";
+            PlaceButton(retry, 30f);
+            PlaceButton(buttonObject.transform, -18f);
+            PlaceButton(panel.Find("End Run"), -66f);
+            PlaceButton(panel.Find("Main Menu"), -114f);
+        }
+    }
+
+    private static void PlaceButton(Transform target, float y)
+    {
+        if (target == null) return;
+        RectTransform rect = (RectTransform)target;
+        rect.anchoredPosition = new Vector2(rect.anchoredPosition.x, y);
+        rect.sizeDelta = new Vector2(rect.sizeDelta.x, 42f);
     }
 
     private void Update()
     {
         if (Keyboard.current != null &&
             (Keyboard.current.escapeKey.wasPressedThisFrame || Keyboard.current.qKey.wasPressedThisFrame))
-            TogglePause();
+        {
+            if (settings != null && settings.IsOpen) settings.HandleBack();
+            else TogglePause();
+        }
     }
 
     public void TogglePause()

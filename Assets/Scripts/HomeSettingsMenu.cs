@@ -23,6 +23,24 @@ public class HomeSettingsMenu : MonoBehaviour
     private Button closeButton;
     private Button cancelButton;
     private TMP_Text statusText;
+    private SaveSystem pauseSaveSystem;
+    private bool pauseMode;
+    public bool IsOpen => settingsOverlay != null && (settingsOverlay.activeSelf || confirmationOverlay.activeSelf);
+
+    public void ConfigureForPause(SaveSystem saveSystem)
+    {
+        pauseMode = true;
+        pauseSaveSystem = saveSystem;
+        menuButton.gameObject.SetActive(false);
+        confirmationOverlay.transform.Find("Confirmation Panel/Card/Question").GetComponent<TMP_Text>().text = "LEAVE THIS RUN?";
+        confirmationOverlay.transform.Find("Confirmation Panel/Card/Warning").GetComponent<TMP_Text>().text = "YOUR SAVED DATA WILL BE DELETED";
+    }
+
+    public void HandleBack()
+    {
+        if (confirmationOverlay.activeSelf) CancelDelete();
+        else if (settingsOverlay.activeSelf) CloseSettings();
+    }
 
     private void Awake()
     {
@@ -45,7 +63,7 @@ public class HomeSettingsMenu : MonoBehaviour
 #else
         bool escapePressed = Input.GetKeyDown(KeyCode.Escape);
 #endif
-        if (!escapePressed) return;
+        if (!escapePressed || pauseMode) return;
 
         if (confirmationOverlay.activeSelf) CancelDelete();
         else if (settingsOverlay.activeSelf) CloseSettings();
@@ -127,15 +145,15 @@ public class HomeSettingsMenu : MonoBehaviour
         CreateImage("Header Stripe", card, Cyan, new Vector2(0f, 1f), new Vector2(1f, 1f),
             new Vector2(0.5f, 1f), new Vector2(0f, -3f), new Vector2(0f, 5f));
 
-        CreateText("Question", card, "ESTAS SEGURO?", 27f, Cream, TextAlignmentOptions.Center,
+        CreateText("Question", card, "ARE YOU SURE?", 27f, Cream, TextAlignmentOptions.Center,
             Center, Center, Center, new Vector2(0f, 56f), new Vector2(410f, 50f));
-        CreateText("Warning", card, "SE BORRARAN TODAS LAS PARTIDAS", 12f, Cyan,
+        CreateText("Warning", card, "ALL SAVE DATA WILL BE DELETED", 12f, Cyan,
             TextAlignmentOptions.Center, Center, Center, Center,
             new Vector2(0f, 11f), new Vector2(400f, 35f));
 
-        CreateTextButton(card, "Yes", "Y", Center, new Vector2(-87f, -65f),
+        CreateTextButton(card, "Yes", "YES", Center, new Vector2(-87f, -65f),
             new Vector2(135f, 48f), DeepInk, Pink, ConfirmDelete);
-        cancelButton = CreateTextButton(card, "No", "N", Center, new Vector2(87f, -65f),
+        cancelButton = CreateTextButton(card, "No", "NO", Center, new Vector2(87f, -65f),
             new Vector2(135f, 48f), DeepInk, Cyan, CancelDelete);
 
     }
@@ -185,9 +203,10 @@ public class HomeSettingsMenu : MonoBehaviour
         });
     }
 
-    private void OpenSettings()
+    public void OpenSettings()
     {
         menuButton.gameObject.SetActive(false);
+        settingsOverlay.transform.SetAsLastSibling();
         settingsOverlay.SetActive(true);
         Select(closeButton);
     }
@@ -195,13 +214,17 @@ public class HomeSettingsMenu : MonoBehaviour
     private void CloseSettings()
     {
         settingsOverlay.SetActive(false);
-        menuButton.gameObject.SetActive(true);
-        Select(menuButton);
+        if (!pauseMode)
+        {
+            menuButton.gameObject.SetActive(true);
+            Select(menuButton);
+        }
         PlayerPrefs.Save();
     }
 
     private void ShowDeleteConfirmation()
     {
+        confirmationOverlay.transform.SetAsLastSibling();
         confirmationOverlay.SetActive(true);
         Select(cancelButton);
     }
@@ -214,7 +237,14 @@ public class HomeSettingsMenu : MonoBehaviour
 
     private void ConfirmDelete()
     {
+        if (pauseMode && pauseSaveSystem != null) pauseSaveSystem.DisableSaving();
         GameSaveSystem.ClearSaveData();
+        if (pauseMode)
+        {
+            Time.timeScale = 1f;
+            UnityEngine.SceneManagement.SceneManager.LoadScene("Home");
+            return;
+        }
         confirmationOverlay.SetActive(false);
         statusText.text = "SAVE DATA DELETED";
         Select(closeButton);

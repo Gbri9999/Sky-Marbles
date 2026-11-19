@@ -7,6 +7,9 @@ public class SaveSystem : MonoBehaviour
     [SerializeField] private TMP_Text coinText;
 
     private bool loaded;
+    private bool savingDisabled;
+
+    public void DisableSaving() => savingDisabled = true;
 
     private void Awake()
     {
@@ -16,6 +19,7 @@ public class SaveSystem : MonoBehaviour
 
     public void SaveData()
     {
+        if (savingDisabled) return;
         PlayerPrefs.SetInt(StoreProgress.Coins, manager.coins);
         PlayerPrefs.Save();
     }
