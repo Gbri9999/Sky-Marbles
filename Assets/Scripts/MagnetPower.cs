@@ -3,7 +3,7 @@ using UnityEngine;
 public class MagnetPower : MonoBehaviour
 {
     [SerializeField, Min(0.1f)] private float radius = 3.5f;
-    [SerializeField, Min(0.1f)] private float pullSpeed = 8f;
+    [SerializeField, Min(0.1f)] private float pullSpeed = 22f;
 
     private readonly Collider2D[] nearby = new Collider2D[32];
     private ContactFilter2D coinFilter;

@@ -555,6 +555,11 @@ MonoBehaviour:
     next: {fileID: 748187259}
   selectedMarbleLabel: {fileID: 842131804}
   patrickTotemIcon: {fileID: 21300000, guid: 4ca8b0f77889b44dd93b672d12eb405c, type: 3}
+  bravyPortrait: {fileID: 7691074973594586061, guid: 0e99fd6e8df934390a6166ecf736830d, type: 3}
+  voltyPortrait: {fileID: 8355366542781049819, guid: 29680b25a41a14f5db0fea6c12a2a864, type: 3}
+  cheeseIcon: {fileID: 21300000, guid: ee26110cc38d2465cac8146fdfcf9b27, type: 3}
+  cyclopsIcon: {fileID: -3397209764660123113, guid: 4ff90531ea4c64c249c70792739495d6, type: 3}
+  dashIcon: {fileID: 2186602288099788976, guid: b71846466e7f84ea884f58815a78a882, type: 3}
 --- !u!114 &85237510
 MonoBehaviour:
   m_ObjectHideFlags: 0

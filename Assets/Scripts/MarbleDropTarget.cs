@@ -8,6 +8,6 @@ public class MarbleDropTarget : MonoBehaviour, IDropHandler
     public void OnDrop(PointerEventData eventData)
     {
         MarbleDragSource marble = eventData.pointerDrag?.GetComponent<MarbleDragSource>();
-        if (marble != null) locker.EquipMarble(marble.MarbleId);
+        if (marble != null && marble.IsEquippingDrag) locker.EquipMarble(marble.MarbleId);
     }
 }

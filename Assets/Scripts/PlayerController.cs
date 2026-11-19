@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Marble Powers")]
     [SerializeField, Range(0.2f, 0.9f)] private float breezeGravityMultiplier = 0.65f;
+    [SerializeField, Range(1f, 1.5f)] private float bravyJumpMultiplier = 1.15f;
 
     [Header("Ground Detection")]
     public float groundCheckDistance = 0.12f;
@@ -38,30 +39,56 @@ public class PlayerController : MonoBehaviour
     private float coyoteTimeCounter;
     private bool jumpUsedSinceLanding;
     private bool holdingSpace;
+    private int lastHorizontalDirection;
+    private bool coyoteFromCyclops;
+    private bool dashMovementActive;
+    private float preserveHorizontalUntil;
     private int extraJumpsPerLanding;
     private int extraJumpsRemaining;
     private float jumpForceMultiplier = 1f;
+    private bool voltyEquipped;
+    private float normalGravityScale;
     private bool patrickTotemEquipped;
     private bool patrickTotemUsed;
     private float previousBottomY;
 
     private ContactFilter2D groundFilter;
     private readonly RaycastHit2D[] groundHits = new RaycastHit2D[12];
+    private readonly Vector2[] groundOrigins = new Vector2[3];
+    private GameObject supportingPlatform;
+    private float lastSupportedFixedTime = float.NegativeInfinity;
+    private float lastLandingBounceTime = float.NegativeInfinity;
 
     public bool inSector;
     private int sectorsInside;
 
     public bool alreadyJumped;
     private bool isDead;
+    public int LastHorizontalDirection => lastHorizontalDirection;
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        normalGravityScale = rb.gravityScale;
         playerCollider = GetComponent<Collider2D>();
         previousBottomY = playerCollider.bounds.min.y;
         patrickTotemEquipped = StoreProgress.IsEquipped(StoreProgress.PatrickTotem);
         string marble = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey);
+        if (!StoreProgress.IsOwned(marble)) marble = StoreProgress.Bluey;
         extraJumpsPerLanding = marble == StoreProgress.Bouncy && StoreProgress.IsOwned(StoreProgress.Bouncy) ? 2 : 0;
+        if (marble == StoreProgress.Volty)
+        {
+            voltyEquipped = true;
+            velocity *= 2f;
+            jumpForceMultiplier = 1.12f;
+            extraJumpsPerLanding++;
+        }
+        else if (marble == StoreProgress.Bravy)
+        {
+            rb.gravityScale *= (1f + Mathf.Clamp(breezeGravityMultiplier, 0.2f, 0.9f)) * 0.5f;
+            jumpForceMultiplier = bravyJumpMultiplier;
+        }
         if (StoreProgress.IsEquipped(StoreProgress.DoubleJump))
             extraJumpsPerLanding++;
         extraJumpsRemaining = extraJumpsPerLanding;
@@ -88,17 +115,20 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        if(keyboard.aKey.isPressed)
+        bool leftPressed = keyboard.aKey.isPressed;
+        bool rightPressed = keyboard.dKey.isPressed;
+        if(leftPressed && !rightPressed)
         {
             direction = -1;
         }
-        else if(keyboard.dKey.isPressed)
+        else if(rightPressed && !leftPressed)
         {
             direction = 1;
         }
         else direction = 0;
 
         if (controlsMirrored) direction = -direction;
+        if (direction != 0) lastHorizontalDirection = direction;
 
         holdingSpace = keyboard.spaceKey.isPressed;
         
@@ -110,10 +140,10 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        if(isDead) return;
+        if(isDead || dashMovementActive) return;
         previousBottomY = playerCollider.bounds.min.y;
         
-        if(!isWallBouncing)
+        if(!isWallBouncing && Time.time >= preserveHorizontalUntil)
         {
             newVelocity = Mathf.SmoothDamp(
                 rb.linearVelocity.x,
@@ -134,19 +164,38 @@ public class PlayerController : MonoBehaviour
 
         bool wasGrounded = isGrounded;
         
-        isGrounded = rb.linearVelocity.y <= 0.08f && CheckGround();
+        GameObject platformUnderfoot = null;
+        isGrounded = rb.linearVelocity.y <= 0.08f && CheckGround(out platformUnderfoot);
+        supportingPlatform = isGrounded ? platformUnderfoot : null;
+        if (supportingPlatform != null) lastSupportedFixedTime = Time.fixedTime;
 
         if(isGrounded)
         {
             coyoteTimeCounter = coyoteTime;
+            coyoteFromCyclops = supportingPlatform != null &&
+                                supportingPlatform.GetComponent<CyclopsCompanion>() != null;
             
-            if(!wasGrounded)
+            // A moving support or a shallow collision can cancel a bounce before the
+            // ground ray clears. Retry once the character has settled on the surface.
+            bool stalledOnSurface = wasGrounded && rb.linearVelocity.y <= 0.01f &&
+                                    Time.fixedTime - lastLandingBounceTime >= 0.08f;
+            if(!wasGrounded || stalledOnSurface)
             {
+                lastLandingBounceTime = Time.fixedTime;
                 jumpUsedSinceLanding = false;
                 extraJumpsRemaining = extraJumpsPerLanding;
 
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-                rb.AddForce(Vector2.up * naturalBounceForce * jumpForceMultiplier, ForceMode2D.Impulse);
+                CheeseBed cheeseBed = supportingPlatform != null
+                    ? supportingPlatform.GetComponent<CheeseBed>() : null;
+                float landingImpulse = cheeseBed != null
+                    ? bounceforce * (1f + bravyJumpMultiplier) * 0.5f
+                    : coyoteFromCyclops ? bounceforce * jumpForceMultiplier * 0.5f
+                    : naturalBounceForce * jumpForceMultiplier;
+                rb.AddForce(Vector2.up * landingImpulse, ForceMode2D.Impulse);
+                if (coyoteFromCyclops && lastHorizontalDirection != 0)
+                    rb.AddForce(Vector2.right * (lastHorizontalDirection * 2f), ForceMode2D.Impulse);
+                if (cheeseBed != null) cheeseBed.Consume();
             }
         }
         else
@@ -159,7 +208,9 @@ public class PlayerController : MonoBehaviour
 
         if(wantsToJump && coyoteTimeCounter > 0f && !jumpUsedSinceLanding)
         {
-            rb.AddForce(Vector2.up * bounceforce * jumpForceMultiplier, ForceMode2D.Impulse);
+            float jumpImpulse = bounceforce * jumpForceMultiplier *
+                                (coyoteFromCyclops ? 0.5f : 1f);
+            rb.AddForce(Vector2.up * jumpImpulse, ForceMode2D.Impulse);
             if (jumpBufferCounter > 0f && manager != null) manager.PlayJumpFeedback();
 
             alreadyJumped = true;
@@ -180,26 +231,52 @@ public class PlayerController : MonoBehaviour
         }
 
         jumpBufferCounter = Mathf.Max(0f, jumpBufferCounter - Time.fixedDeltaTime);
+        if (voltyEquipped)
+            rb.gravityScale = !isGrounded && rb.linearVelocity.y < -0.01f
+                ? normalGravityScale * 0.5f : normalGravityScale;
     }
 
-    private bool CheckGround()
+    public bool TryGetSupportingPlatform(out GameObject platform)
     {
+        platform = supportingPlatform;
+        return !isDead && platform != null &&
+               Time.fixedTime - lastSupportedFixedTime <= Time.fixedDeltaTime;
+    }
+
+    public void SetDashMovement(bool active, bool rebounded = false)
+    {
+        dashMovementActive = active;
+        if (!active && rebounded) preserveHorizontalUntil = Time.time + 0.18f;
+    }
+
+    private bool CheckGround(out GameObject platform)
+    {
+        platform = null;
         Bounds bounds = playerCollider.bounds;
         float inset = Mathf.Min(0.08f, bounds.extents.x * 0.5f);
         
         float startY = bounds.min.y + 0.04f;
         float distance = groundCheckDistance + 0.04f;
 
-        Vector2 left = new Vector2(bounds.min.x + inset, startY);
-        Vector2 center = new Vector2(bounds.center.x, startY);
-        Vector2 right = new Vector2(bounds.max.x - inset, startY);
+        groundOrigins[0] = new Vector2(bounds.min.x + inset, startY);
+        groundOrigins[1] = new Vector2(bounds.center.x, startY);
+        groundOrigins[2] = new Vector2(bounds.max.x - inset, startY);
 
-        return GroundRay(left, distance) ||
-               GroundRay(center, distance) ||
-               GroundRay(right, distance);
+        bool grounded = false;
+        for (int i = 0; i < groundOrigins.Length; i++)
+        {
+            Collider2D ground = GroundRay(groundOrigins[i], distance);
+            if (ground == null) continue;
+
+            grounded = true;
+            if (ground.CompareTag("Platforms") || ground.GetComponent<CyclopsCompanion>() != null)
+                platform = ground.gameObject;
+        }
+
+        return grounded;
     }
 
-    private bool GroundRay(Vector2 origin, float distance)
+    private Collider2D GroundRay(Vector2 origin, float distance)
     {
         int count = Physics2D.Raycast(origin, Vector2.down, groundFilter, groundHits, distance);
 
@@ -210,11 +287,12 @@ public class PlayerController : MonoBehaviour
             if(hitCollider == null || hitCollider.attachedRigidbody == rb)
                 continue;
 
-            if(hitCollider.CompareTag("Floor") || hitCollider.CompareTag("Platforms"))
-                return true;
+            if(hitCollider.CompareTag("Floor") || hitCollider.CompareTag("Platforms") ||
+               hitCollider.GetComponent<CyclopsCompanion>() != null)
+                return hitCollider;
         }
 
-        return false;
+        return null;
     }
 
     private void OnCollisionEnter2D(Collision2D other)

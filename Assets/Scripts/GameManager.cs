@@ -23,6 +23,11 @@ public partial class GameManager : MonoBehaviour
 
     public float timeBetweenEvents = 10f;
 
+    [Header("Run generation")]
+    [SerializeField] private bool useRandomSeed = true;
+    [SerializeField] private int seed;
+    public int Seed => seed;
+
     [Header("Alertas")]
     [SerializeField] private CanvasGroup warningPanel;
     [SerializeField] private string earthquakeAlert = "WARNING: TERREMOTO";
@@ -36,16 +41,26 @@ public partial class GameManager : MonoBehaviour
     private Sprite laserSprite;
     private Sprite laserGlowSprite;
     private float nextEvent;
-    private int eventIndex;
+    private System.Random platformRandom;
+    private System.Random eventRandom;
     private TMP_Text warningText;
+    private bool voltyCoinBonus;
 
     void Start()
     {
+        if (useRandomSeed) seed = System.Guid.NewGuid().GetHashCode();
+        platformRandom = new System.Random(unchecked(seed ^ 0x51A73E2D));
+        eventRandom = new System.Random(unchecked(seed ^ 0x2B19C4F7));
         playerController = player.GetComponent<PlayerController>();
+        voltyCoinBonus = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey) ==
+                         StoreProgress.Volty && StoreProgress.IsOwned(StoreProgress.Volty);
         playerBody = player.GetComponent<Rigidbody2D>();
         cameraMovement = Camera.main.GetComponent<CameraMovement>();
+        cameraMovement.GenerateStars(seed);
+        cameraMovement.GeneratePlanets(seed);
         warningText = warningPanel.GetComponentInChildren<TMP_Text>();
         warningPanel.alpha = 0f;
+        InitializeAltitudeMilestones();
         GenerateChunk(currentChunk * platformsPerChunk);
         currentChunk++;
     }
@@ -55,15 +70,17 @@ public partial class GameManager : MonoBehaviour
         if (isGameOver)
             return;
 
+        UpdateAltitudeMilestones();
+
         if (nextEvent == 0f)
         {
             if (playerController.alreadyJumped)
-                nextEvent = Time.time + Mathf.Max(1f, timeBetweenEvents);
+                ScheduleNextEvent();
         }
         else if (Time.time >= nextEvent)
         {
-            nextEvent = Time.time + Mathf.Max(1f, timeBetweenEvents);
-            StartCoroutine(RunEvent(eventIndex++ % 3));
+            nextEvent = float.PositiveInfinity;
+            StartCoroutine(RunEvent(eventRandom.Next(0, 3)));
         }
 
         float nextChunkTrigger = (currentChunk * platformsPerChunk - 4) * heightChunkDifference;
@@ -73,6 +90,12 @@ public partial class GameManager : MonoBehaviour
             GenerateChunk(currentChunk * platformsPerChunk);
             currentChunk++;
         }
+    }
+
+    private void ScheduleNextEvent()
+    {
+        float interval = timeBetweenEvents * Mathf.Lerp(0.65f, 1.4f, (float)eventRandom.NextDouble());
+        nextEvent = Time.time + Mathf.Max(1f, interval);
     }
 
     private IEnumerator RunEvent(int type)
@@ -90,16 +113,36 @@ public partial class GameManager : MonoBehaviour
 
         yield return type == 0 ? Earthquake() : type == 1 ? Mirror() : Lasers();
         warningPanel.alpha = 0f;
+        if (!isGameOver) ScheduleNextEvent();
     }
 
     private IEnumerator Earthquake()
     {
         PlayGameplaySound(earthquakeSound);
         cameraMovement.Shake(2f, 0.25f);
-        for (int i = 0; i < 10 && !isGameOver; i++)
+        bool brokePlatform = false;
+        float elapsed = 0f;
+        float nextImpulse = 0f;
+        while (elapsed < 2f && !isGameOver)
         {
-            playerBody.AddForce(Vector2.right * Random.Range(-1.5f, 1.5f), ForceMode2D.Impulse);
-            yield return new WaitForSeconds(0.2f);
+            if (!brokePlatform && playerController.TryGetSupportingPlatform(out GameObject platform) &&
+                platform.GetComponent<CyclopsCompanion>() == null)
+            {
+                PlatformFracture.Play(platform, eventRandom);
+                platform.SetActive(false);
+                Destroy(platform);
+                brokePlatform = true;
+            }
+
+            if (elapsed >= nextImpulse)
+            {
+                float push = Mathf.Lerp(-1.5f, 1.5f, (float)eventRandom.NextDouble());
+                playerBody.AddForce(Vector2.right * push, ForceMode2D.Impulse);
+                nextImpulse += 0.2f;
+            }
+
+            yield return new WaitForFixedUpdate();
+            elapsed += Time.fixedDeltaTime;
         }
     }
 
@@ -149,7 +192,8 @@ public partial class GameManager : MonoBehaviour
     {
         PrepareLaserSprites();
         float lastPlayerX = player.position.x;
-        float side = Mathf.Abs(lastPlayerX) > 2.2f ? -Mathf.Sign(lastPlayerX) : (Random.value < 0.5f ? -1f : 1f);
+        float side = Mathf.Abs(lastPlayerX) > 2.2f ? -Mathf.Sign(lastPlayerX) :
+            (eventRandom.NextDouble() < 0.5 ? -1f : 1f);
 
         laser = new GameObject("Lasers");
         laser.transform.SetParent(cameraMovement.transform, false);
@@ -162,7 +206,9 @@ public partial class GameManager : MonoBehaviour
         {
             GameObject ray = new GameObject("Laser");
             ray.transform.SetParent(laser.transform, false);
-            float distance = i == 0 ? Random.Range(0.9f, 1.4f) : Random.Range(1.9f, 2.6f);
+            float distance = i == 0
+                ? Mathf.Lerp(0.9f, 1.4f, (float)eventRandom.NextDouble())
+                : Mathf.Lerp(1.9f, 2.6f, (float)eventRandom.NextDouble());
             ray.transform.localPosition = new Vector3(Mathf.Clamp(lastPlayerX + side * distance, -4.3f, 4.3f), 0f, 0f);
             ray.transform.localScale = new Vector3(0.16f, 12f, 1f);
 
@@ -246,6 +292,7 @@ public partial class GameManager : MonoBehaviour
 
     private void OnDestroy()
     {
+        DisposeAltitudeMilestones();
         if (laserGlowSprite != null)
         {
             Destroy(laserGlowSprite.texture);
@@ -259,13 +306,13 @@ public partial class GameManager : MonoBehaviour
         for (int i = 0; i < platformsPerChunk; i++)
         {
             Vector3 pos = new Vector3(
-                Random.Range(-4.7f, 4.7f),
+                Mathf.Lerp(-4.7f, 4.7f, (float)platformRandom.NextDouble()),
                 (startIndex + i) * heightChunkDifference,
                 0
             );
 
             Vector3 posCoin = new Vector3(
-                Random.Range(-4.7f, 4.7f),
+                Mathf.Lerp(-4.7f, 4.7f, (float)platformRandom.NextDouble()),
                 ((startIndex + i) * heightChunkDifference) + 1,
                 0
             );
@@ -277,7 +324,9 @@ public partial class GameManager : MonoBehaviour
                 platformContainer.transform
             );
 
-            if(i%3 == 0)
+            bool regularCoin = i % 3 == 0;
+            bool extraVoltyCoin = voltyCoinBonus && (i % 3 == 1 || i == 8);
+            if (regularCoin || extraVoltyCoin)
             {
                 Instantiate(
                     coinPrefab,
@@ -297,6 +346,7 @@ public partial class GameManager : MonoBehaviour
             PlayGameplaySound(deathSound);
             gameOverController.ShowGameOver();
             StopAllCoroutines();
+            HideAltitudeMilestone();
             warningPanel.alpha = 0f;
             playerController.controlsMirrored = false;
             cameraMovement.SetMirror(false);

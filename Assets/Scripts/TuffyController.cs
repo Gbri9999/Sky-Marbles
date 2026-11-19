@@ -28,7 +28,7 @@ public class TuffyController : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if(other.CompareTag("Platforms"))
+        if(other.CompareTag("Platforms") && other.GetComponent<CyclopsCompanion>() == null)
         {
             speed = speed + valueToSum;
         }
