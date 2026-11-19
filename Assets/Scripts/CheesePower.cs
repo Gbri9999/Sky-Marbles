@@ -50,7 +50,7 @@ public class CheesePower : MonoBehaviour
             remaining > 0f ? Mathf.CeilToInt(remaining) + "s" : "READY";
 
         Keyboard keyboard = Keyboard.current;
-        bool pressed = keyboard != null && (useSecondaryKey
+        bool pressed = MobileControls.ConsumeActive(StoreProgress.ActiveHudIndex(StoreProgress.Cheese)) || keyboard != null && (useSecondaryKey
             ? (keyboard.leftShiftKey.wasPressedThisFrame || keyboard.rightShiftKey.wasPressedThisFrame) : keyboard.eKey.wasPressedThisFrame);
         if (pressed && remaining <= 0f)
         {
@@ -105,6 +105,7 @@ public class CheesePower : MonoBehaviour
         hud.pivot = new Vector2(1f, 0f);
         hud.anchoredPosition = new Vector2(-28f, 138f - 110f * StoreProgress.ActiveHudIndex(StoreProgress.Cheese));
         hud.sizeDelta = new Vector2(100f, 112f);
+        if (MobileControls.IsMobile) MobileControls.ConfigureActiveHud(hud, StoreProgress.ActiveHudIndex(StoreProgress.Cheese));
 
         ringSprite = CreatePixelRing();
         Image back = CreateImage(hud, "Ring Back", new Vector2(0f, 12f),
@@ -124,7 +125,7 @@ public class CheesePower : MonoBehaviour
             cheeseIcon, Color.white).preserveAspect = true;
         CreateImage(hud, "E Badge", new Vector2(32f, 45f), new Vector2(24f, 24f),
             null, new Color(0.09f, 0.14f, 0.27f, 0.95f));
-        CreateLabel(hud, useSecondaryKey ? "SHIFT" : "E", new Vector2(32f, 45f), new Vector2(24f, 24f),
+        CreateLabel(hud, MobileControls.IsMobile ? "TAP" : useSecondaryKey ? "SHIFT" : "E", new Vector2(32f, 45f), new Vector2(24f, 24f),
             coinText.font, 16f, new Color(1f, 0.91f, 0.64f));
         cooldownLabel = CreateLabel(hud, "READY", new Vector2(0f, -37f),
             new Vector2(95f, 22f), coinText.font, 14f, new Color(0.87f, 0.96f, 1f));

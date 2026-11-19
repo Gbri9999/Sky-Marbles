@@ -81,8 +81,8 @@ public class HomeSettingsMenu : MonoBehaviour
 
     private void BuildMenuButton()
     {
-        RectTransform buttonRect = CreateRect("Settings Button", transform, new Vector2(0f, 1f),
-            new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(20f, -20f), new Vector2(50f, 46f));
+        RectTransform buttonRect = CreateRect("Settings Button", transform, new Vector2(1f, 1f),
+            new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-20f, -20f), new Vector2(50f, 46f));
         Image background = AddImage(buttonRect, Ink);
         menuButton = AddButton(buttonRect, background, OpenSettings);
 

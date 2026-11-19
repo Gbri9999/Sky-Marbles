@@ -220,6 +220,9 @@ public class LoreController : MonoBehaviour
         {
             if (Mouse.current.leftButton.wasPressedThisFrame) pressed = true;
         }
+        if (Touchscreen.current != null)
+            foreach (var touch in Touchscreen.current.touches)
+                if (touch.press.wasPressedThisFrame) { pressed = true; break; }
 #endif
 
 #if ENABLE_LEGACY_INPUT_MANAGER
@@ -308,7 +311,7 @@ public class LoreController : MonoBehaviour
         promptRect.anchoredPosition = continuePromptScreenOffset;
         promptRect.sizeDelta = new Vector2(420f, Mathf.Max(36f, continuePromptFontSize * 1.75f));
 
-        continuePromptText.text = DefaultContinuePromptMessage;
+        continuePromptText.text = Application.isMobilePlatform ? "TAP TO CONTINUE" : DefaultContinuePromptMessage;
         continuePromptText.fontSize = continuePromptFontSize;
         continuePromptText.enableAutoSizing = true;
         continuePromptText.fontSizeMax = continuePromptFontSize;

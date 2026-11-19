@@ -108,6 +108,15 @@ public class PlayerController : MonoBehaviour
         if(isDead) return;
 
         Keyboard keyboard = Keyboard.current;
+        if (MobileControls.IsMobile)
+        {
+            direction = MobileControls.Aim.x > 0.2f ? 1 : MobileControls.Aim.x < -0.2f ? -1 : 0;
+            if (controlsMirrored) direction = -direction;
+            if (direction != 0) lastHorizontalDirection = direction;
+            holdingSpace = MobileControls.JumpHeld;
+            if (MobileControls.ConsumeJump()) jumpBufferCounter = jumpBufferTime;
+            return;
+        }
         if(keyboard == null)
         {
             direction = 0;
@@ -136,6 +145,11 @@ public class PlayerController : MonoBehaviour
         {
             jumpBufferCounter = jumpBufferTime;
         }
+    }
+
+    private void Start()
+    {
+        if (MobileControls.IsMobile) gameObject.AddComponent<MobileControls>();
     }
 
     void FixedUpdate()

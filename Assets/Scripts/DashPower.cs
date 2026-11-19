@@ -78,10 +78,10 @@ public class DashPower : MonoBehaviour
             remaining > 0f ? Mathf.CeilToInt(remaining) + "s" : "READY";
 
         Keyboard keyboard = Keyboard.current;
-        bool pressed = keyboard != null && (useSecondaryKey
+        bool pressed = MobileControls.ConsumeActive(StoreProgress.ActiveHudIndex(StoreProgress.Dash)) || keyboard != null && (useSecondaryKey
             ? (keyboard.leftShiftKey.wasPressedThisFrame || keyboard.rightShiftKey.wasPressedThisFrame) : keyboard.eKey.wasPressedThisFrame);
         if (pressed && remaining <= 0f && !dashing)
-            BeginDash(ReadDirection(keyboard));
+            BeginDash(MobileControls.IsMobile ? MobileControls.DashDirection(player.LastHorizontalDirection) : ReadDirection(keyboard));
     }
 
     private Vector2 ReadDirection(Keyboard keyboard)
@@ -167,6 +167,7 @@ public class DashPower : MonoBehaviour
         hud.pivot = new Vector2(1f, 0f);
         hud.anchoredPosition = new Vector2(-28f, 138f - 110f * StoreProgress.ActiveHudIndex(StoreProgress.Dash));
         hud.sizeDelta = new Vector2(100f, 112f);
+        if (MobileControls.IsMobile) MobileControls.ConfigureActiveHud(hud, StoreProgress.ActiveHudIndex(StoreProgress.Dash));
 
         ringSprite = CheesePower.CreatePixelRing();
         CheesePower.CreateImage(hud, "Ring Back", new Vector2(0f, 12f),
@@ -186,7 +187,7 @@ public class DashPower : MonoBehaviour
         UiSpriteAnimation.Attach(icon, dashIcon);
         CheesePower.CreateImage(hud, "Key Badge", new Vector2(32f, 45f),
             new Vector2(24f, 24f), null, new Color(0.09f, 0.14f, 0.27f, 0.95f));
-        CheesePower.CreateLabel(hud, useSecondaryKey ? "SHIFT" : "E",
+        CheesePower.CreateLabel(hud, MobileControls.IsMobile ? "TAP" : useSecondaryKey ? "SHIFT" : "E",
             new Vector2(32f, 45f), new Vector2(24f, 24f), coinText.font,
             16f, new Color(1f, 0.91f, 0.64f));
         cooldownLabel = CheesePower.CreateLabel(hud, "READY", new Vector2(0f, -37f),

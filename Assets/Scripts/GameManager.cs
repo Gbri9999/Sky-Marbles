@@ -45,6 +45,8 @@ public partial class GameManager : MonoBehaviour
     private System.Random eventRandom;
     private TMP_Text warningText;
     private bool voltyCoinBonus;
+    private float previousPlatformX;
+    private bool hasPreviousPlatform;
 
     void Start()
     {
@@ -83,7 +85,7 @@ public partial class GameManager : MonoBehaviour
             StartCoroutine(RunEvent(eventRandom.Next(0, 3)));
         }
 
-        float nextChunkTrigger = (currentChunk * platformsPerChunk - 4) * heightChunkDifference;
+        float nextChunkTrigger = PlatformHeight(currentChunk * platformsPerChunk - 4);
 
         if (player.position.y >= nextChunkTrigger)
         {
@@ -301,39 +303,55 @@ public partial class GameManager : MonoBehaviour
         if (laserSprite != null) Destroy(laserSprite);
     }
 
+    private float PlatformHeight(int index)
+    {
+        // Use the original spacing after 1000 meters, without a gap at the transition.
+        float easierSpacing = heightChunkDifference * 0.9f;
+        float transitionIndex = (startingAltitude + 1000f) / easierSpacing;
+        return index <= transitionIndex ? index * easierSpacing :
+            startingAltitude + 1000f + (index - transitionIndex) * heightChunkDifference;
+    }
+
     void GenerateChunk(int startIndex)
     {
+        BoxCollider2D platformCollider = platformPrefab.GetComponent<BoxCollider2D>();
+        float platformWidth = platformCollider != null
+            ? platformCollider.size.x * Mathf.Abs(platformPrefab.transform.localScale.x) : 3f;
+        const float edge = 4.7f;
         for (int i = 0; i < platformsPerChunk; i++)
         {
-            Vector3 pos = new Vector3(
-                Mathf.Lerp(-4.7f, 4.7f, (float)platformRandom.NextDouble()),
-                (startIndex + i) * heightChunkDifference,
-                0
-            );
+            float height = PlatformHeight(startIndex + i);
+            float x = Mathf.Lerp(-edge, edge, (float)platformRandom.NextDouble());
+            if (height - startingAltitude <= 1000f && hasPreviousPlatform)
+            {
+                // Sample from the portions that do not overlap the platform below.
+                float separation = Mathf.Min(platformWidth + 0.1f, edge * 2f);
+                float leftStart = Mathf.Max(-edge, previousPlatformX - 5f);
+                float leftEnd = Mathf.Max(leftStart, previousPlatformX - separation);
+                float rightEnd = Mathf.Min(edge, previousPlatformX + 5f);
+                float rightStart = Mathf.Min(rightEnd, previousPlatformX + separation);
+                float leftLength = leftEnd - leftStart;
+                float rightLength = rightEnd - rightStart;
+                float sample = (float)platformRandom.NextDouble() * (leftLength + rightLength);
+                x = sample < leftLength ? leftStart + sample : rightStart + sample - leftLength;
+            }
+            previousPlatformX = x;
+            hasPreviousPlatform = true;
+            Vector3 pos = new Vector3(x, height, 0f);
+            float coinX = Mathf.Lerp(-edge, edge, (float)platformRandom.NextDouble());
 
-            Vector3 posCoin = new Vector3(
-                Mathf.Lerp(-4.7f, 4.7f, (float)platformRandom.NextDouble()),
-                ((startIndex + i) * heightChunkDifference) + 1,
-                0
-            );
-
-            Instantiate(
-                platformPrefab,
-                pos,
-                Quaternion.identity,
-                platformContainer.transform
-            );
+            Instantiate(platformPrefab, pos, Quaternion.identity, platformContainer.transform);
 
             bool regularCoin = i % 3 == 0;
             bool extraVoltyCoin = voltyCoinBonus && (i % 3 == 1 || i == 8);
             if (regularCoin || extraVoltyCoin)
             {
-                Instantiate(
-                    coinPrefab,
-                    posCoin,
-                    Quaternion.identity,
-                    coinContainer.transform
-                );
+                // Each 10 meters adds 0.1 percentage points to the chance of a nearby coin.
+                float nearbyChance = Mathf.Clamp01(Mathf.Floor(Mathf.Max(0f, height - startingAltitude) / 10f) * 0.001f);
+                if (platformRandom.NextDouble() < nearbyChance)
+                    coinX = Mathf.Clamp(x + Mathf.Lerp(-1f, 1f, (float)platformRandom.NextDouble()), -edge, edge);
+                Instantiate(coinPrefab, new Vector3(coinX, height + 1f, 0f),
+                    Quaternion.identity, coinContainer.transform);
             }
         }
     }

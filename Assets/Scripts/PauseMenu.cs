@@ -21,6 +21,29 @@ public class PauseMenu : MonoBehaviour
         pausePanel.interactable = false;
         pausePanel.blocksRaycasts = false;
         Canvas canvas = pausePanel.GetComponentInParent<Canvas>();
+        if (Application.isMobilePlatform)
+        {
+            Transform pauseButton = canvas.transform.Find("Pause Button");
+            if (pauseButton != null)
+            {
+                RectTransform buttonRect = (RectTransform)pauseButton;
+                buttonRect.sizeDelta = new Vector2(50f, 46f);
+                TMP_Text label = pauseButton.GetComponentInChildren<TMP_Text>();
+                if (label != null) label.gameObject.SetActive(false);
+                for (int i = 0; i < 3; i++)
+                {
+                    GameObject line = new GameObject("Menu Bar", typeof(RectTransform), typeof(Image));
+                    RectTransform rect = line.GetComponent<RectTransform>();
+                    rect.SetParent(buttonRect, false);
+                    rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+                    rect.anchoredPosition = new Vector2(0f, 8f - i * 8f);
+                    rect.sizeDelta = new Vector2(22f, 3f);
+                    Image image = line.GetComponent<Image>();
+                    image.color = new Color(0.953f, 0.659f, 0.769f);
+                    image.raycastTarget = false;
+                }
+            }
+        }
         settings = canvas.gameObject.AddComponent<HomeSettingsMenu>();
         settings.ConfigureForPause(saveSystem);
 
@@ -34,9 +57,18 @@ public class PauseMenu : MonoBehaviour
             button.onClick = new Button.ButtonClickedEvent();
             button.onClick.AddListener(settings.OpenSettings);
             buttonObject.GetComponentInChildren<TMP_Text>().text = "SETTINGS";
-            PlaceButton(retry, 30f);
-            PlaceButton(buttonObject.transform, -18f);
-            PlaceButton(panel.Find("End Run"), -66f);
+            Transform endRun = panel.Find("End Run");
+            if (endRun != null)
+            {
+                endRun.name = "Resume";
+                Button resume = endRun.GetComponent<Button>();
+                resume.onClick = new Button.ButtonClickedEvent();
+                resume.onClick.AddListener(Resume);
+                endRun.GetComponentInChildren<TMP_Text>().text = "RESUME";
+                PlaceButton(endRun, 30f);
+            }
+            PlaceButton(retry, -18f);
+            PlaceButton(buttonObject.transform, -66f);
             PlaceButton(panel.Find("Main Menu"), -114f);
         }
     }
@@ -57,6 +89,11 @@ public class PauseMenu : MonoBehaviour
             if (settings != null && settings.IsOpen) settings.HandleBack();
             else TogglePause();
         }
+    }
+
+    public void Resume()
+    {
+        if (paused) TogglePause();
     }
 
     public void TogglePause()
