@@ -10,6 +10,7 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
     private const float TargetAspect = 16f / 9f;
     private const int UiSortingOffset = 1000;
     private Camera sceneCamera;
+    private Camera uiCamera;
     private readonly List<CanvasEntry> canvases = new List<CanvasEntry>();
     private int lastWidth;
     private int lastHeight;
@@ -45,6 +46,17 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
         camera.clearFlags = CameraClearFlags.SolidColor;
         camera.backgroundColor = Color.black;
         camera.cullingMask = 0;
+
+        GameObject uiCameraObject = new GameObject("Display UI Camera");
+        uiCameraObject.transform.SetParent(transform, false);
+        // Keep the UI camera away from the game world while its canvases sit
+        // one unit in front of it. Its projection must never inherit Mirror.
+        uiCameraObject.transform.position = new Vector3(0f, 0f, -10000f);
+        uiCamera = uiCameraObject.AddComponent<Camera>();
+        uiCamera.clearFlags = CameraClearFlags.Depth;
+        uiCamera.orthographic = true;
+        uiCamera.nearClipPlane = 0.1f;
+        uiCamera.farClipPlane = 2f;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -57,7 +69,9 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
     {
         sceneCamera = Camera.main;
         canvases.Clear();
+        uiCamera.enabled = sceneCamera != null;
         if (sceneCamera == null) return;
+        uiCamera.depth = sceneCamera.depth + 1f;
 
         foreach (Canvas canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
         {
@@ -76,7 +90,7 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
             // Camera-space canvases share sorting with sprites and tilemaps.
             // Preserve the overlay canvases' relative order above the game world.
             canvas.sortingOrder += UiSortingOffset;
-            canvas.worldCamera = sceneCamera;
+            canvas.worldCamera = uiCamera;
             canvas.planeDistance = 1f;
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
         }
@@ -105,6 +119,7 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
         float x = safe.x + (safe.width - width) * 0.5f;
         float y = safe.y + (safe.height - height) * 0.5f;
         sceneCamera.rect = new Rect(x / lastWidth, y / lastHeight, width / lastWidth, height / lastHeight);
+        uiCamera.rect = sceneCamera.rect;
 
         foreach (CanvasEntry entry in canvases)
         {
