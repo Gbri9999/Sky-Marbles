@@ -90,6 +90,7 @@ public class CheesePower : MonoBehaviour
         animator.runtimeAnimatorController = cheeseBedAnimation;
         BoxCollider2D platform = bed.AddComponent<BoxCollider2D>();
         platform.size = new Vector2(0.88f, 0.26f);
+        StoreProgress.ConfigureShadowPlatform(platform);
         bed.AddComponent<CheeseBed>().Initialize(bedLifetime);
         return true;
     }

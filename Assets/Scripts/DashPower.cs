@@ -146,6 +146,11 @@ public class DashPower : MonoBehaviour
         }
     }
 
+    public void CancelForBounce()
+    {
+        if (dashing) EndDash(true);
+    }
+
     private void EndDash(bool rebounded)
     {
         if (!dashing) return;

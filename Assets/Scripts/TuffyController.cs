@@ -13,9 +13,10 @@ public class TuffyController : MonoBehaviour
         initialSpeed = speed;
     }
 
-    public void ResetSpeed()
+    public void Repel(float distance)
     {
         speed = initialSpeed;
+        transform.position += Vector3.down * distance;
     }
 
     void Update()

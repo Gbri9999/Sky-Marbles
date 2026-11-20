@@ -45,6 +45,9 @@ public partial class GameManager : MonoBehaviour
     private System.Random eventRandom;
     private TMP_Text warningText;
     private bool voltyCoinBonus;
+    private bool marineeEquipped;
+    private System.Random marineeRandom;
+    [SerializeField] private RuntimeAnimatorController pufferFishAnimator;
     private float previousPlatformX;
     private bool hasPreviousPlatform;
 
@@ -56,6 +59,9 @@ public partial class GameManager : MonoBehaviour
         playerController = player.GetComponent<PlayerController>();
         voltyCoinBonus = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey) ==
                          StoreProgress.Volty && StoreProgress.IsOwned(StoreProgress.Volty);
+        marineeEquipped = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey) ==
+                          StoreProgress.Marinee && StoreProgress.IsOwned(StoreProgress.Marinee);
+        marineeRandom = new System.Random(unchecked(seed ^ 0x3419A2));
         playerBody = player.GetComponent<Rigidbody2D>();
         cameraMovement = Camera.main.GetComponent<CameraMovement>();
         cameraMovement.GenerateStars(seed);
@@ -340,9 +346,15 @@ public partial class GameManager : MonoBehaviour
             Vector3 pos = new Vector3(x, height, 0f);
             float coinX = Mathf.Lerp(-edge, edge, (float)platformRandom.NextDouble());
 
-            Instantiate(platformPrefab, pos, Quaternion.identity, platformContainer.transform);
+            GameObject generatedPlatform = Instantiate(platformPrefab, pos, Quaternion.identity, platformContainer.transform);
+            StoreProgress.ConfigureShadowPlatform(generatedPlatform.GetComponent<Collider2D>());
 
-            bool regularCoin = i % 3 == 0;
+            if (marineeEquipped && i % 3 == 1 && pufferFishAnimator != null)
+                PufferFish.Create(new Vector3(Mathf.Lerp(-3.8f, 3.8f, (float)marineeRandom.NextDouble()),
+                    height + heightChunkDifference * 0.5f, 0f), platformContainer.transform,
+                    pufferFishAnimator, this, (float)marineeRandom.NextDouble() * 6.28f);
+
+            bool regularCoin = marineeEquipped ? marineeRandom.NextDouble() < 0.6 : i % 3 == 0;
             bool extraVoltyCoin = voltyCoinBonus && (i % 3 == 1 || i == 8);
             if (regularCoin || extraVoltyCoin)
             {
@@ -354,6 +366,14 @@ public partial class GameManager : MonoBehaviour
                     Quaternion.identity, coinContainer.transform);
             }
         }
+    }
+
+    public void AddCoin()
+    {
+        coins++;
+        TMP_Text label = GameObject.Find("Coin Text").GetComponent<TMP_Text>();
+        label.text = "COINS  " + coins;
+        GetComponent<SaveSystem>().SaveData();
     }
 
     public void GameOver()

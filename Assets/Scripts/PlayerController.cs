@@ -47,10 +47,12 @@ public class PlayerController : MonoBehaviour
     private int extraJumpsRemaining;
     private float jumpForceMultiplier = 1f;
     private bool voltyEquipped;
+    private bool marineeEquipped;
+    private int marineeAirJumpsUsed;
     private float normalGravityScale;
+    private bool shadowEquipped;
     private bool patrickTotemEquipped;
     private bool patrickTotemUsed;
-    private float previousBottomY;
 
     private ContactFilter2D groundFilter;
     private readonly RaycastHit2D[] groundHits = new RaycastHit2D[12];
@@ -72,7 +74,7 @@ public class PlayerController : MonoBehaviour
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
         normalGravityScale = rb.gravityScale;
         playerCollider = GetComponent<Collider2D>();
-        previousBottomY = playerCollider.bounds.min.y;
+        shadowEquipped = StoreProgress.IsEquipped(StoreProgress.Shadow);
         patrickTotemEquipped = StoreProgress.IsEquipped(StoreProgress.PatrickTotem);
         string marble = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey);
         if (!StoreProgress.IsOwned(marble)) marble = StoreProgress.Bluey;
@@ -83,6 +85,13 @@ public class PlayerController : MonoBehaviour
             velocity *= 2f;
             jumpForceMultiplier = 1.12f;
             extraJumpsPerLanding++;
+        }
+        else if (marble == StoreProgress.Marinee)
+        {
+            marineeEquipped = true;
+            rb.gravityScale *= Mathf.Clamp(breezeGravityMultiplier, 0.2f, 0.9f);
+            jumpForceMultiplier = 1.12f;
+            extraJumpsPerLanding = 2;
         }
         else if (marble == StoreProgress.Bravy)
         {
@@ -155,7 +164,6 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         if(isDead || dashMovementActive) return;
-        previousBottomY = playerCollider.bounds.min.y;
         
         if(!isWallBouncing && Time.time >= preserveHorizontalUntil)
         {
@@ -198,6 +206,7 @@ public class PlayerController : MonoBehaviour
                 lastLandingBounceTime = Time.fixedTime;
                 jumpUsedSinceLanding = false;
                 extraJumpsRemaining = extraJumpsPerLanding;
+                marineeAirJumpsUsed = 0;
 
                 rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
                 CheeseBed cheeseBed = supportingPlatform != null
@@ -237,7 +246,9 @@ public class PlayerController : MonoBehaviour
            coyoteTimeCounter <= 0f && extraJumpsRemaining > 0)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
-            rb.AddForce(Vector2.up * bounceforce * jumpForceMultiplier, ForceMode2D.Impulse);
+            float airJumpScale = marineeEquipped && marineeAirJumpsUsed == 1 ? 0.55f : 1f;
+            rb.AddForce(Vector2.up * bounceforce * jumpForceMultiplier * airJumpScale, ForceMode2D.Impulse);
+            if (marineeEquipped) { marineeAirJumpsUsed++; MarineeSparkle.Play(transform.position); }
             if (manager != null) manager.PlayJumpFeedback();
             alreadyJumped = true;
             extraJumpsRemaining--;
@@ -248,6 +259,24 @@ public class PlayerController : MonoBehaviour
         if (voltyEquipped)
             rb.gravityScale = !isGrounded && rb.linearVelocity.y < -0.01f
                 ? normalGravityScale * 0.5f : normalGravityScale;
+    }
+
+    public void BounceFromPufferFish()
+    {
+        if (isDead) return;
+        DashPower dash = GetComponent<DashPower>();
+        if (dash != null) dash.CancelForBounce();
+        extraJumpsRemaining = extraJumpsPerLanding;
+        marineeAirJumpsUsed = 0;
+        jumpUsedSinceLanding = true;
+        jumpBufferCounter = 0f;
+        coyoteTimeCounter = 0f;
+        isGrounded = false;
+        alreadyJumped = true;
+        rb.linearVelocity = new Vector2(rb.linearVelocity.x, 0f);
+        rb.AddForce(Vector2.up * (naturalBounceForce + bounceforce) *
+            Mathf.Sqrt(Mathf.Clamp(breezeGravityMultiplier, 0.2f, 0.9f)), ForceMode2D.Impulse);
+        if (manager != null) manager.PlayPufferFishBounceFeedback();
     }
 
     public bool TryGetSupportingPlatform(out GameObject platform)
@@ -301,6 +330,9 @@ public class PlayerController : MonoBehaviour
             if(hitCollider == null || hitCollider.attachedRigidbody == rb)
                 continue;
 
+            if (shadowEquipped && hitCollider.CompareTag("Platforms") &&
+                playerCollider.bounds.min.y < hitCollider.bounds.max.y - 0.04f)
+                continue;
             if(hitCollider.CompareTag("Floor") || hitCollider.CompareTag("Platforms") ||
                hitCollider.GetComponent<CyclopsCompanion>() != null)
                 return hitCollider;
@@ -340,8 +372,7 @@ public class PlayerController : MonoBehaviour
         if(!isDead && (other.CompareTag("Enemy") || (manager != null && manager.IsLaser(other))))
         {
             TuffyController tuffy = other.GetComponentInParent<TuffyController>();
-            if(tuffy != null && patrickTotemEquipped && !patrickTotemUsed &&
-               rb.linearVelocity.y < 0f && previousBottomY >= other.bounds.max.y - 0.1f)
+            if(tuffy != null && patrickTotemEquipped && !patrickTotemUsed)
             {
                 ParryTuffy(tuffy);
                 return;
@@ -366,8 +397,11 @@ public class PlayerController : MonoBehaviour
     private void ParryTuffy(TuffyController tuffy)
     {
         patrickTotemUsed = true;
-        tuffy.ResetSpeed();
+        DashPower dash = GetComponent<DashPower>();
+        if (dash != null) dash.CancelForBounce();
+        tuffy.Repel(50f);
         extraJumpsRemaining = extraJumpsPerLanding;
+        marineeAirJumpsUsed = 0;
         jumpUsedSinceLanding = true;
         jumpBufferCounter = 0f;
         coyoteTimeCounter = 0f;

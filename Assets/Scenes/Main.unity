@@ -4033,6 +4033,7 @@ MonoBehaviour:
   coyoteTime: 0.12
   holdSpaceForJump: 1
   breezeGravityMultiplier: 0.65
+  bravyJumpMultiplier: 1.15
   groundCheckDistance: 0.12
   inSector: 0
   alreadyJumped: 0
@@ -4075,6 +4076,7 @@ MonoBehaviour:
   bouncy: {fileID: 9100000, guid: f6e6edbcb3c8ba247b3070f7ac3beca1, type: 2}
   bravy: {fileID: 9100000, guid: 08436d68482544fdd9c3740e31aeac28, type: 2}
   volty: {fileID: 9100000, guid: dbfd16501a68340cebb1f544b85d4aa1, type: 2}
+  marinee: {fileID: 9100000, guid: 1c74908260dfa418e82530945fae8d57, type: 2}
 --- !u!114 &1334180603
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4089,57 +4091,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MagnetPower
   radius: 3.5
   pullSpeed: 22
---- !u!114 &3300000200
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1334180595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1edbc8cba6c94757ac5b1207746db1e4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CheesePower
-  cheeseIcon: {fileID: 21300000, guid: ee26110cc38d2465cac8146fdfcf9b27, type: 3}
-  cheeseBedSprite: {fileID: -6696022125348524115, guid: 989ebb6c56c384066a9b02c268dbfd3a, type: 3}
-  cheeseBedAnimation: {fileID: 9100000, guid: 260c6aa4509374664b16e1b888f88ad4, type: 2}
-  cooldownSeconds: 12
-  bedLifetime: 8
---- !u!114 &3300000201
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1334180595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9bc31df51a374a7a8dce42063c1d03ed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CyclopsPower
-  cyclopsSprite: {fileID: -3397209764660123113, guid: 4ff90531ea4c64c249c70792739495d6, type: 3}
-  cyclopsAnimation: {fileID: 9100000, guid: 6054e5e000d414695b0f2ff5ecb6b99a, type: 2}
-  followDelay: 2
-  verticalOffset: 1.6
---- !u!114 &3300000202
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1334180595}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1edcbca85284d7bb99742a825c6d7c6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::DashPower
-  dashIcon: {fileID: 2186602288099788976, guid: b71846466e7f84ea884f58815a78a882, type: 3}
-  dashAnimation: {fileID: 9100000, guid: c0fb9c6400b32455e8b41d5cf671f510, type: 2}
-  dashSpeed: 22
-  dashDuration: 0.16
-  cooldownSeconds: 5
-  reboundSpeed: 21
 --- !u!1 &1345204231
 GameObject:
   m_ObjectHideFlags: 0
@@ -11051,6 +11002,7 @@ MonoBehaviour:
   earthquakeSound: {fileID: 8300000, guid: 6ab115df0a7b24898a99adde1857508a, type: 3}
   laserImpactSound: {fileID: 8300000, guid: 6ab115df0a7b24898a99adde1857508a, type: 3}
   jumpSound: {fileID: 8300000, guid: ae57514a178384bd7be59ec5319b2286, type: 3}
+  pufferFishBounceSound: {fileID: 8300000, guid: df3406fce470748a694bec2174c5ec12, type: 3}
   deathSound: {fileID: 8300000, guid: 6ab115df0a7b24898a99adde1857508a, type: 3}
   gameplaySoundVolume: 0.8
   platformContainer: {fileID: 1461781581}
@@ -11069,6 +11021,7 @@ MonoBehaviour:
   earthquakeAlert: 'WARNING: EARTHQUAKE'
   mirrorAlert: 'WARNING: MIRROR'
   laserAlert: 'WARNING: LASERS'
+  pufferFishAnimator: {fileID: 9100000, guid: 997d73509a6bc4c77afbf186aa21bd53, type: 2}
 --- !u!114 &1997101719
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11949,6 +11902,57 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InfiniteWallParallax
   wallTilemap: {fileID: 1969785056}
   verticalParallax: 0.405
+--- !u!114 &3300000200
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334180595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1edbc8cba6c94757ac5b1207746db1e4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CheesePower
+  cheeseIcon: {fileID: 21300000, guid: ee26110cc38d2465cac8146fdfcf9b27, type: 3}
+  cheeseBedSprite: {fileID: -6696022125348524115, guid: 989ebb6c56c384066a9b02c268dbfd3a, type: 3}
+  cheeseBedAnimation: {fileID: 9100000, guid: 260c6aa4509374664b16e1b888f88ad4, type: 2}
+  cooldownSeconds: 12
+  bedLifetime: 8
+--- !u!114 &3300000201
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334180595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9bc31df51a374a7a8dce42063c1d03ed, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CyclopsPower
+  cyclopsSprite: {fileID: -3397209764660123113, guid: 4ff90531ea4c64c249c70792739495d6, type: 3}
+  cyclopsAnimation: {fileID: 9100000, guid: 6054e5e000d414695b0f2ff5ecb6b99a, type: 2}
+  followDelay: 2
+  verticalOffset: 1.6
+--- !u!114 &3300000202
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334180595}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b1edcbca85284d7bb99742a825c6d7c6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DashPower
+  dashIcon: {fileID: 2186602288099788976, guid: b71846466e7f84ea884f58815a78a882, type: 3}
+  dashAnimation: {fileID: 9100000, guid: c0fb9c6400b32455e8b41d5cf671f510, type: 2}
+  dashSpeed: 22
+  dashDuration: 0.16
+  cooldownSeconds: 5
+  reboundSpeed: 21
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
