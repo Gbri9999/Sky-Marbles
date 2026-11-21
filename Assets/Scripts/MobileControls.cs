@@ -2,10 +2,21 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+#if UNITY_WEBGL && !UNITY_EDITOR
+using System.Runtime.InteropServices;
+#endif
 
 public class MobileControls : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
 {
-    public static bool IsMobile => Application.isMobilePlatform;
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [DllImport("__Internal")] private static extern int SkyMarblesIsMobileBrowser();
+    private static readonly bool mobileBrowser = SkyMarblesIsMobileBrowser() != 0;
+#endif
+    public static bool IsMobile => Application.isMobilePlatform
+#if UNITY_WEBGL && !UNITY_EDITOR
+        || mobileBrowser
+#endif
+        ;
     public static Vector2 Aim { get; private set; }
     public static bool JumpHeld { get; private set; }
     private static bool jumpPressed;
@@ -75,6 +86,16 @@ public class MobileControls : MonoBehaviour, IPointerDownHandler, IDragHandler, 
     public void OnPointerUp(PointerEventData e) { if (e.pointerId != pointerId) return; pointerId = int.MinValue; Aim = Vector2.zero; knob.anchoredPosition = Vector2.zero; }
     public static void Press(int kind) { if (kind == 0) { JumpHeld = true; jumpPressed = true; } else activePressed[kind - 1] = true; }
     public static void Release(int kind) { if (kind == 0) JumpHeld = false; }
+    private void OnApplicationFocus(bool focused)
+    {
+        if (focused) return;
+        pointerId = int.MinValue;
+        Aim = Vector2.zero;
+        JumpHeld = false;
+        jumpPressed = false;
+        activePressed[0] = activePressed[1] = false;
+        if (knob != null) knob.anchoredPosition = Vector2.zero;
+    }
     private void OnDestroy() { Aim = Vector2.zero; JumpHeld = false; jumpPressed = false; activePressed[0] = activePressed[1] = false; if (root != null) Destroy(root); }
 }
 

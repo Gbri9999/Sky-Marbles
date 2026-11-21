@@ -46,6 +46,8 @@ public partial class GameManager : MonoBehaviour
     private TMP_Text warningText;
     private bool voltyCoinBonus;
     private bool marineeEquipped;
+    private bool lokiEquipped;
+    private bool moneyBagEquipped;
     private System.Random marineeRandom;
     [SerializeField] private RuntimeAnimatorController pufferFishAnimator;
     private float previousPlatformX;
@@ -61,6 +63,8 @@ public partial class GameManager : MonoBehaviour
                          StoreProgress.Volty && StoreProgress.IsOwned(StoreProgress.Volty);
         marineeEquipped = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey) ==
                           StoreProgress.Marinee && StoreProgress.IsOwned(StoreProgress.Marinee);
+        lokiEquipped = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey) == StoreProgress.Loki && StoreProgress.IsOwned(StoreProgress.Loki);
+        moneyBagEquipped = StoreProgress.IsEquipped(StoreProgress.MoneyBag);
         marineeRandom = new System.Random(unchecked(seed ^ 0x3419A2));
         playerBody = player.GetComponent<Rigidbody2D>();
         cameraMovement = Camera.main.GetComponent<CameraMovement>();
@@ -355,6 +359,12 @@ public partial class GameManager : MonoBehaviour
                     pufferFishAnimator, this, (float)marineeRandom.NextDouble() * 6.28f);
 
             bool regularCoin = marineeEquipped ? marineeRandom.NextDouble() < 0.6 : i % 3 == 0;
+            if ((startIndex + i) % 2 == 0 && (lokiEquipped || moneyBagEquipped))
+            {
+                float chance = lokiEquipped || marineeEquipped ? 0.6f : 0.2f;
+                if (moneyBagEquipped) chance += 0.2f;
+                regularCoin = marineeRandom.NextDouble() < Mathf.Clamp01(chance);
+            }
             bool extraVoltyCoin = voltyCoinBonus && (i % 3 == 1 || i == 8);
             if (regularCoin || extraVoltyCoin)
             {

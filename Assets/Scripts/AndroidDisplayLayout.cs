@@ -6,7 +6,7 @@ using UnityEngine.UI;
 // Keep the same 16:9 composition and touch coordinates on Android screens.
 public sealed class AndroidDisplayLayout : MonoBehaviour
 {
-#if UNITY_ANDROID && !UNITY_EDITOR
+#if (UNITY_ANDROID || UNITY_WEBGL) && !UNITY_EDITOR
     private const float TargetAspect = 16f / 9f;
     private const int UiSortingOffset = 1000;
     private Camera sceneCamera;
@@ -27,11 +27,13 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Initialize()
     {
+#if UNITY_ANDROID
         Screen.autorotateToPortrait = false;
         Screen.autorotateToPortraitUpsideDown = false;
         Screen.autorotateToLandscapeLeft = true;
         Screen.autorotateToLandscapeRight = true;
         Screen.orientation = ScreenOrientation.AutoRotation;
+#endif
         GameObject root = new GameObject("Android Display Layout");
         DontDestroyOnLoad(root);
         root.AddComponent<AndroidDisplayLayout>();
@@ -73,7 +75,7 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
         if (sceneCamera == null) return;
         uiCamera.depth = sceneCamera.depth + 1f;
 
-        foreach (Canvas canvas in FindObjectsByType<Canvas>(FindObjectsSortMode.None))
+        foreach (Canvas canvas in FindObjectsByType<Canvas>())
         {
             if (!canvas.isRootCanvas || canvas.renderMode != RenderMode.ScreenSpaceOverlay ||
                 canvas.gameObject.scene != scene) continue;

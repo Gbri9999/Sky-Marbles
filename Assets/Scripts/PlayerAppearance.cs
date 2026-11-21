@@ -10,6 +10,8 @@ public class PlayerAppearance : MonoBehaviour
     [SerializeField] private RuntimeAnimatorController volty;
     [SerializeField] private RuntimeAnimatorController marinee;
 
+    [SerializeField] private RuntimeAnimatorController loki;
+
     private void Awake()
     {
         string selected = PlayerPrefs.GetString(StoreProgress.SelectedCharacter, StoreProgress.Bluey);
@@ -26,6 +28,9 @@ public class PlayerAppearance : MonoBehaviour
 
         else if (selected == StoreProgress.Marinee && StoreProgress.IsOwned(StoreProgress.Marinee))
             chosen = marinee;
+
+        if (selected == StoreProgress.Loki && StoreProgress.IsOwned(StoreProgress.Loki))
+            chosen = loki;
 
         GetComponent<Animator>().runtimeAnimatorController = chosen;
     }

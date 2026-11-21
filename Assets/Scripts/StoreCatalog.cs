@@ -27,6 +27,10 @@ public class StoreCatalog : MonoBehaviour
     [SerializeField] private Sprite shadowIcon;
     [SerializeField] private Sprite aspiratorIcon;
 
+    [SerializeField] private Sprite lokiPortrait;
+    [SerializeField] private Sprite hamburgerIcon;
+    [SerializeField] private Sprite moneyBagIcon;
+
     private enum Category { General, Charms, Marbles }
     private Category selectedCategory;
     private readonly Image[] tabImages = new Image[3];
@@ -47,10 +51,16 @@ public class StoreCatalog : MonoBehaviour
             "FOLLOWING COMPANION.\nBOUNCE ON IT AGAIN AND AGAIN.", -1));
         catalog.Add(CreateItem(items[5], StoreProgress.Dash, 100, "Dash", dashIcon,
             "AIM WITH WASD OR ARROWS.\nDASH AND REBOUND.", -1));
-        catalog.Add(CreateItem(items[4], StoreProgress.Aspirator, 190, "Aspirator", aspiratorIcon,
+        catalog.Add(CreateItem(items[4], StoreProgress.Aspirator, 190, "Vaccum", aspiratorIcon,
             "PULL COINS FROM ACROSS THE MAP.\nEXTRA VERTICAL RANGE.", -1));
         catalog.Add(CreateItem(items[5], StoreProgress.Shadow, 150, "Shadow", shadowIcon,
             "PASS THROUGH PLATFORMS.\nLAND ON THEM FROM ABOVE.", -1));
+        catalog.Add(CreateItem(items[2], StoreProgress.Loki, 350, "Loki", lokiPortrait,
+            "TRIPLE JUMP AND TUFFY PARRY.\nMORE COINS AND MAGIC SPARKLES.", -1));
+        catalog.Add(CreateItem(items[5], StoreProgress.Hamburger, 110, "Hamburger", hamburgerIcon,
+            "FLY FOR 4 SECONDS.\n16 SECOND RECHARGE.", -1));
+        catalog.Add(CreateItem(items[5], StoreProgress.MoneyBag, 180, "Money Bag", moneyBagIcon,
+            "+20% COIN CHANCE EVERY TWO FLOORS.", -1));
         catalog.Sort((a, b) =>
         {
             int priceOrder = a.price.CompareTo(b.price);
@@ -80,7 +90,7 @@ public class StoreCatalog : MonoBehaviour
         Animator animator = image.GetComponent<Animator>();
         if (animator != null) animator.enabled = false;
         image.sprite = portrait;
-        if (id == StoreProgress.Bravy || id == StoreProgress.Volty || id == StoreProgress.Marinee || id == StoreProgress.Cyclops || id == StoreProgress.Dash || id == StoreProgress.Shadow) UiSpriteAnimation.Attach(image, portrait);
+        if (id == StoreProgress.Loki || id == StoreProgress.Hamburger || id == StoreProgress.MoneyBag || id == StoreProgress.Bravy || id == StoreProgress.Volty || id == StoreProgress.Marinee || id == StoreProgress.Cyclops || id == StoreProgress.Dash || id == StoreProgress.Shadow) UiSpriteAnimation.Attach(image, portrait);
         if (id == StoreProgress.Cheese) CreateCheeseShadow(image);
 
         Button button = card.GetComponentInChildren<Button>(true);

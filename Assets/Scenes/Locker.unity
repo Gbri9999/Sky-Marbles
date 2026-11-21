@@ -563,6 +563,9 @@ MonoBehaviour:
   dashIcon: {fileID: 2186602288099788976, guid: b71846466e7f84ea884f58815a78a882, type: 3}
   shadowIcon: {fileID: 4093480436322176185, guid: 7f6ecd77c03fd42338b6e8745d317940, type: 3}
   aspiratorIcon: {fileID: 5533207599503002932, guid: af68ccc24b5de499099df9f252370276, type: 3}
+  lokiPortrait: {fileID: 4644447613663070010, guid: 6b59f9b470fa54745a69af17a1d361f3, type: 3}
+  hamburgerIcon: {fileID: -1595998989223354662, guid: 2cb156efb04e246e6b53a4931b8835dd, type: 3}
+  moneyBagIcon: {fileID: -4523217728425661029, guid: 7e609dc9dcb3544b29ef4456b2100a81, type: 3}
 --- !u!114 &85237510
 MonoBehaviour:
   m_ObjectHideFlags: 0

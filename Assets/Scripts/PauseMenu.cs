@@ -21,7 +21,7 @@ public class PauseMenu : MonoBehaviour
         pausePanel.interactable = false;
         pausePanel.blocksRaycasts = false;
         Canvas canvas = pausePanel.GetComponentInParent<Canvas>();
-        if (Application.isMobilePlatform)
+        if (MobileControls.IsMobile)
         {
             Transform pauseButton = canvas.transform.Find("Pause Button");
             if (pauseButton != null)

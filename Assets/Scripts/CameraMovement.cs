@@ -26,6 +26,7 @@ public class CameraMovement : MonoBehaviour
     private float shakeDuration;
     private float shakeStrength;
     private Camera cameraComponent;
+    private Rigidbody2D playerBody;
     private Color startingBackgroundColor;
     private float startingPlayerHeight;
     private float highestPlayerHeight;
@@ -61,6 +62,8 @@ public class CameraMovement : MonoBehaviour
     void Awake()
     {
         cameraComponent = GetComponent<Camera>();
+        playerBody = player.GetComponent<Rigidbody2D>();
+        if (playerBody != null) playerBody.interpolation = RigidbodyInterpolation2D.Interpolate;
         targetY = transform.position.y;
         startingBackgroundColor = cameraComponent.backgroundColor;
         startingPlayerHeight = player.position.y;
@@ -272,12 +275,17 @@ public class CameraMovement : MonoBehaviour
         else
         {
             float playerY = player.position.y;
-            if (playerY > cameraY + upThreshold)
-                targetY = playerY - upThreshold;
+            float ascentSpeed = playerBody != null ? Mathf.Max(0f, playerBody.linearVelocity.y) : 0f;
+            float lookAhead = Mathf.Min(3f, ascentSpeed * 0.12f);
+            if (playerY + lookAhead > cameraY + upThreshold)
+                targetY = playerY + lookAhead - upThreshold;
             else if (playerY < cameraY - downThreshold)
                 targetY = playerY + downThreshold;
 
             float currentSmoothTime = targetY < cameraY ? smoothTimeDown : smoothTimeUp;
+            if (targetY >= cameraY)
+                currentSmoothTime = Mathf.Lerp(smoothTimeUp, Mathf.Min(smoothTimeUp, 0.14f),
+                    Mathf.InverseLerp(6f, 24f, ascentSpeed));
             position.y = Mathf.SmoothDamp(cameraY, targetY, ref cameraVelocity, currentSmoothTime);
         }
 

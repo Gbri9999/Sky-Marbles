@@ -311,7 +311,7 @@ public class LoreController : MonoBehaviour
         promptRect.anchoredPosition = continuePromptScreenOffset;
         promptRect.sizeDelta = new Vector2(420f, Mathf.Max(36f, continuePromptFontSize * 1.75f));
 
-        continuePromptText.text = Application.isMobilePlatform ? "TAP TO CONTINUE" : DefaultContinuePromptMessage;
+        continuePromptText.text = MobileControls.IsMobile ? "TAP TO CONTINUE" : DefaultContinuePromptMessage;
         continuePromptText.fontSize = continuePromptFontSize;
         continuePromptText.enableAutoSizing = true;
         continuePromptText.fontSizeMax = continuePromptFontSize;

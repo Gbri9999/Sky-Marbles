@@ -21,13 +21,16 @@ public class PlayMenu : MonoBehaviour
         playPanel.interactable = false;
         playPanel.blocksRaycasts = false;
 
-        playButton.onClick.AddListener(OpenPlayMenu);
-
         worldsPanel.alpha = 0f;
         worldsPanel.interactable = false;
         worldsPanel.blocksRaycasts = false;
 
-        storyModeButton.onClick.AddListener(OpenWorldSelection);
+    }
+
+    private void OnEnable()
+    {
+        if (playButton != null) playButton.onClick.AddListener(OpenPlayMenu);
+        if (storyModeButton != null) storyModeButton.onClick.AddListener(OpenWorldSelection);
     }
 
     public void OpenPlayMenu()

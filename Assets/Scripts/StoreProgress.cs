@@ -8,6 +8,9 @@ public static class StoreProgress
     public const string Bouncy = "Store.Bouncy";
     public const string Bravy = "Store.Bravy";
     public const string Marinee = "Store.Marinee";
+    public const string Loki = "Store.Loki";
+    public const string Hamburger = "Store.Hamburger";
+    public const string MoneyBag = "Store.MoneyBag";
     public const string Volty = "Store.Volty";
     public const string DoubleJump = "Store.DoubleJump";
     public const string Magnet = "Store.Magnet";
@@ -35,7 +38,7 @@ public static class StoreProgress
 
     public static bool IsMarble(string id)
     {
-        return id == Bluey || id == Breeze || id == Bouncy || id == Bravy || id == Volty || id == Marinee;
+        return id == Bluey || id == Breeze || id == Bouncy || id == Bravy || id == Volty || id == Marinee || id == Loki;
     }
 
     public static void ConfigureShadowPlatform(Collider2D platform)
@@ -50,7 +53,7 @@ public static class StoreProgress
 
     public static bool IsActiveAmulet(string id)
     {
-        return id == Cheese || id == Dash;
+        return id == Cheese || id == Dash || id == Hamburger;
     }
 
     public static bool UsesSecondaryActiveKey(string id)

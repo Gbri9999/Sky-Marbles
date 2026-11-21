@@ -17,12 +17,18 @@ public static class GameSaveSystem
         PlayerPrefs.DeleteKey(StoreProgress.Bouncy);
         PlayerPrefs.DeleteKey(StoreProgress.Bravy);
         PlayerPrefs.DeleteKey(StoreProgress.Volty);
+        PlayerPrefs.DeleteKey(StoreProgress.Marinee);
+        PlayerPrefs.DeleteKey(StoreProgress.Loki);
         PlayerPrefs.DeleteKey(StoreProgress.DoubleJump);
         PlayerPrefs.DeleteKey(StoreProgress.Magnet);
+        PlayerPrefs.DeleteKey(StoreProgress.Aspirator);
         PlayerPrefs.DeleteKey(StoreProgress.PatrickTotem);
         PlayerPrefs.DeleteKey(StoreProgress.Cheese);
         PlayerPrefs.DeleteKey(StoreProgress.Cyclops);
         PlayerPrefs.DeleteKey(StoreProgress.Dash);
+        PlayerPrefs.DeleteKey(StoreProgress.Shadow);
+        PlayerPrefs.DeleteKey(StoreProgress.Hamburger);
+        PlayerPrefs.DeleteKey(StoreProgress.MoneyBag);
         PlayerPrefs.DeleteKey(StoreProgress.SelectedCharacter);
         PlayerPrefs.DeleteKey(StoreProgress.AmuletSlot1);
         PlayerPrefs.DeleteKey(StoreProgress.AmuletSlot2);

@@ -4032,6 +4032,7 @@ MonoBehaviour:
   jumpBufferTime: 0.15
   coyoteTime: 0.12
   holdSpaceForJump: 1
+  hamburgerIcon: {fileID: -1595998989223354662, guid: 2cb156efb04e246e6b53a4931b8835dd, type: 3}
   breezeGravityMultiplier: 0.65
   bravyJumpMultiplier: 1.15
   groundCheckDistance: 0.12
@@ -4077,6 +4078,7 @@ MonoBehaviour:
   bravy: {fileID: 9100000, guid: 08436d68482544fdd9c3740e31aeac28, type: 2}
   volty: {fileID: 9100000, guid: dbfd16501a68340cebb1f544b85d4aa1, type: 2}
   marinee: {fileID: 9100000, guid: 1c74908260dfa418e82530945fae8d57, type: 2}
+  loki: {fileID: 9100000, guid: 33aec3afe3b9140619457dcaa4ae21e0, type: 2}
 --- !u!114 &1334180603
 MonoBehaviour:
   m_ObjectHideFlags: 0
