@@ -32,9 +32,12 @@ public class LockerController : MonoBehaviour
     [SerializeField] private Sprite patrickTotemIcon;
     [SerializeField] private Sprite bravyPortrait;
     [SerializeField] private Sprite voltyPortrait;
+    [SerializeField] private Sprite marineePortrait;
     [SerializeField] private Sprite cheeseIcon;
     [SerializeField] private Sprite cyclopsIcon;
     [SerializeField] private Sprite dashIcon;
+    [SerializeField] private Sprite shadowIcon;
+    [SerializeField] private Sprite aspiratorIcon;
 
     private Sprite magnetIconSprite;
     private Image[] amuletCheeseShadows;
@@ -57,6 +60,7 @@ public class LockerController : MonoBehaviour
         List<MarbleView> views = new List<MarbleView>(marbles);
         views.Add(CreateMarbleView(template, StoreProgress.Bravy, bravyPortrait));
         views.Add(CreateMarbleView(template, StoreProgress.Volty, voltyPortrait));
+        views.Add(CreateMarbleView(template, StoreProgress.Marinee, marineePortrait));
         marbles = views.ToArray();
         CreateMarbleCarousel();
         amuletCheeseShadows = new Image[amuletSlots.Length];
@@ -297,6 +301,8 @@ public class LockerController : MonoBehaviour
             options.Add(StoreProgress.DoubleJump);
         if (StoreProgress.IsOwned(StoreProgress.Magnet) && other != StoreProgress.Magnet)
             options.Add(StoreProgress.Magnet);
+        if (StoreProgress.IsOwned(StoreProgress.Aspirator) && other != StoreProgress.Aspirator)
+            options.Add(StoreProgress.Aspirator);
         if (StoreProgress.IsOwned(StoreProgress.PatrickTotem) && other != StoreProgress.PatrickTotem)
             options.Add(StoreProgress.PatrickTotem);
         if (StoreProgress.IsOwned(StoreProgress.Cheese) && other != StoreProgress.Cheese)
@@ -305,6 +311,8 @@ public class LockerController : MonoBehaviour
             options.Add(StoreProgress.Cyclops);
         if (StoreProgress.IsOwned(StoreProgress.Dash) && other != StoreProgress.Dash)
             options.Add(StoreProgress.Dash);
+        if (StoreProgress.IsOwned(StoreProgress.Shadow) && other != StoreProgress.Shadow)
+            options.Add(StoreProgress.Shadow);
         return options;
     }
 
@@ -329,7 +337,8 @@ public class LockerController : MonoBehaviour
         selectedMarbleLabel.text = selected == StoreProgress.Breeze ? "BREEZE" :
                                    selected == StoreProgress.Bouncy ? "BOUNCY" :
                                    selected == StoreProgress.Bravy ? "BRAVY" :
-                                   selected == StoreProgress.Volty ? "VOLTY" : "BLUEY";
+                                   selected == StoreProgress.Volty ? "VOLTY" :
+                                   selected == StoreProgress.Marinee ? "MARINEE" : "BLUEY";
 
         foreach (MarbleView marble in marbles)
         {
@@ -347,28 +356,34 @@ public class LockerController : MonoBehaviour
             AmuletView view = amuletSlots[i];
             view.nameLabel.text = id == StoreProgress.DoubleJump ? "DOUBLE JUMP" :
                                   id == StoreProgress.Magnet ? "MAGNET" :
+                                  id == StoreProgress.Aspirator ? "ASPIRATOR" :
                                   id == StoreProgress.PatrickTotem ? "PATRICK TOTEM" :
                                   id == StoreProgress.Cheese ? "CHEESE" :
                                   id == StoreProgress.Cyclops ? "CYCLOPS" :
-                                  id == StoreProgress.Dash ? "DASH" : "EMPTY";
+                                  id == StoreProgress.Dash ? "DASH" :
+                                  id == StoreProgress.Shadow ? "SHADOW" : "EMPTY";
             view.jumpIcon.gameObject.SetActive(id == StoreProgress.DoubleJump);
-            view.magnetIcon.sprite = id == StoreProgress.PatrickTotem ? patrickTotemIcon :
+            view.magnetIcon.sprite = id == StoreProgress.Aspirator ? aspiratorIcon :
+                                     id == StoreProgress.PatrickTotem ? patrickTotemIcon :
                                      id == StoreProgress.Cheese ? cheeseIcon :
                                      id == StoreProgress.Cyclops ? cyclopsIcon :
-                                     id == StoreProgress.Dash ? dashIcon : magnetIconSprite;
+                                     id == StoreProgress.Dash ? dashIcon :
+                                     id == StoreProgress.Shadow ? shadowIcon : magnetIconSprite;
             if (animatedAmuletIds[i] != id)
             {
                 UiSpriteAnimation oldAnimation = view.magnetIcon.GetComponent<UiSpriteAnimation>();
                 if (oldAnimation != null) { oldAnimation.enabled = false; Destroy(oldAnimation); }
-                if (id == StoreProgress.Cyclops || id == StoreProgress.Dash)
+                if (id == StoreProgress.Cyclops || id == StoreProgress.Dash || id == StoreProgress.Shadow)
                     UiSpriteAnimation.Attach(view.magnetIcon, view.magnetIcon.sprite);
                 animatedAmuletIds[i] = id;
             }
             view.magnetIcon.gameObject.SetActive(id == StoreProgress.Magnet ||
+                                                 id == StoreProgress.Aspirator ||
                                                  id == StoreProgress.PatrickTotem ||
                                                  id == StoreProgress.Cheese ||
                                                  id == StoreProgress.Cyclops ||
-                                                 id == StoreProgress.Dash);
+                                                 id == StoreProgress.Dash ||
+                                                 id == StoreProgress.Shadow);
             if (amuletCheeseShadows != null)
                 amuletCheeseShadows[i].gameObject.SetActive(id == StoreProgress.Cheese);
             view.previous.interactable = options.Count > 1;

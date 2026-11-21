@@ -7,6 +7,7 @@ public partial class GameManager
     [SerializeField] private AudioClip earthquakeSound;
     [SerializeField] private AudioClip laserImpactSound;
     [SerializeField] private AudioClip jumpSound;
+    [SerializeField] private AudioClip pufferFishBounceSound;
     [SerializeField] private AudioClip deathSound;
     [SerializeField, Range(0f, 1f)] private float gameplaySoundVolume = 0.8f;
 
@@ -26,9 +27,14 @@ public partial class GameManager
             gameplaySoundSource.PlayOneShot(clip, gameplaySoundVolume * GameAudioSettings.SoundEffectsVolume);
     }
 
-    public void PlayJumpFeedback()
+    public void PlayJumpFeedback() => PlayJumpFeedback(jumpSound);
+
+    public void PlayPufferFishBounceFeedback() =>
+        PlayJumpFeedback(pufferFishBounceSound != null ? pufferFishBounceSound : jumpSound);
+
+    private void PlayJumpFeedback(AudioClip sound)
     {
-        PlayGameplaySound(jumpSound);
+        PlayGameplaySound(sound);
         if (jumpSpeedLines == null && Camera.main != null)
             jumpSpeedLines = Camera.main.GetComponent<JumpSpeedLines>();
         if (jumpSpeedLines != null) jumpSpeedLines.Play();

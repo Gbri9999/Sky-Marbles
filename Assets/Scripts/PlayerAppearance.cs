@@ -8,6 +8,7 @@ public class PlayerAppearance : MonoBehaviour
     [SerializeField] private RuntimeAnimatorController bouncy;
     [SerializeField] private RuntimeAnimatorController bravy;
     [SerializeField] private RuntimeAnimatorController volty;
+    [SerializeField] private RuntimeAnimatorController marinee;
 
     private void Awake()
     {
@@ -22,6 +23,9 @@ public class PlayerAppearance : MonoBehaviour
             chosen = bravy;
         else if (selected == StoreProgress.Volty && StoreProgress.IsOwned(StoreProgress.Volty))
             chosen = volty;
+
+        else if (selected == StoreProgress.Marinee && StoreProgress.IsOwned(StoreProgress.Marinee))
+            chosen = marinee;
 
         GetComponent<Animator>().runtimeAnimatorController = chosen;
     }

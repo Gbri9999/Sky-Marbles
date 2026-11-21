@@ -603,9 +603,12 @@ MonoBehaviour:
     buttonLabel: {fileID: 1962756859}
   bravyPortrait: {fileID: 7691074973594586061, guid: 0e99fd6e8df934390a6166ecf736830d, type: 3}
   voltyPortrait: {fileID: 8355366542781049819, guid: 29680b25a41a14f5db0fea6c12a2a864, type: 3}
+  marineePortrait: {fileID: 34234045, guid: a637dc0df150746c9a3bd6369f3ad032, type: 3}
   cheeseIcon: {fileID: 21300000, guid: ee26110cc38d2465cac8146fdfcf9b27, type: 3}
   cyclopsIcon: {fileID: -3397209764660123113, guid: 4ff90531ea4c64c249c70792739495d6, type: 3}
   dashIcon: {fileID: 2186602288099788976, guid: b71846466e7f84ea884f58815a78a882, type: 3}
+  shadowIcon: {fileID: 4093480436322176185, guid: 7f6ecd77c03fd42338b6e8745d317940, type: 3}
+  aspiratorIcon: {fileID: 5533207599503002932, guid: af68ccc24b5de499099df9f252370276, type: 3}
 --- !u!114 &121833960
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -17,9 +17,7 @@ public class Coin : MonoBehaviour
     {
         if (other.CompareTag("Player"))
         {
-            manager.coins++;
-            coinText.text = "COINS  " + manager.coins;
-            manager.GetComponent<SaveSystem>().SaveData();
+            manager.AddCoin();
 
             Destroy(gameObject);
         }
