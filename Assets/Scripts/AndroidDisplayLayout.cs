@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using UnityEngine.Rendering.Universal;
 
 // Keep the same 16:9 composition and touch coordinates on Android screens.
 public sealed class AndroidDisplayLayout : MonoBehaviour
@@ -59,6 +60,9 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
         uiCamera.orthographic = true;
         uiCamera.nearClipPlane = 0.1f;
         uiCamera.farClipPlane = 2f;
+        // A separate URP base camera clears the preceding camera's color buffer,
+        // even when its clear flags are set to Depth. Composite UI as an overlay.
+        uiCamera.GetUniversalAdditionalCameraData().renderType = CameraRenderType.Overlay;
         SceneManager.sceneLoaded += OnSceneLoaded;
     }
 
@@ -74,6 +78,8 @@ public sealed class AndroidDisplayLayout : MonoBehaviour
         uiCamera.enabled = sceneCamera != null;
         if (sceneCamera == null) return;
         uiCamera.depth = sceneCamera.depth + 1f;
+        var cameraStack = sceneCamera.GetUniversalAdditionalCameraData().cameraStack;
+        if (!cameraStack.Contains(uiCamera)) cameraStack.Add(uiCamera);
 
         foreach (Canvas canvas in FindObjectsByType<Canvas>())
         {
